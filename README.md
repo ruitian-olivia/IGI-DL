@@ -90,7 +90,7 @@ python patches_normalization.py
 
 ##### 3. Nuclei segmentation
 
-Using Hover-Nety^[1]^ pretrained on PanNuke Datasety^[2]^ to segment nucleus in the HE patches, where the model weight file is saved in **./Hover-Net/hovernet-inference-weights** as pannuke.npz.
+Using Hover-Nety<sub>[1]</sub> pretrained on PanNuke Datasety<sub>[2]</sub> to segment nucleus in the HE patches, where the model weight file is saved in **./Hover-Net/hovernet-inference-weights** as pannuke.npz.
 
 ```bash
 mkdir Hover-Net
@@ -176,6 +176,30 @@ python gat4layer_multi_Y_main.py graph_GAT 2e-4 1e-4 256 0.4 200 20
 ```
 
 ##### Integrated models
+
+- GIN+ResNet18
+```bash
+cd model_training/integrated_model
+python GIN_ResNet18_BN_MLP_main.py integrated_GIN_resnet False 2e-4 1e-4 128 0.4 100 10 --mlp_hidden 256 256
+```
+
+- GCN+ResNet18
+```bash
+cd model_training/integrated_model
+python GCN_ResNet18_BN_MLP_main.py integrated_GCN_resnet False 2e-4 1e-4 128 0.4 100 10 --mlp_hidden 256 256
+```
+
+- GAT+ResNet18
+```bash
+cd model_training/integrated_model
+python GAT_ResNet18_BN_MLP_main.py integrated_GCN_resnet False 2e-4 1e-4 128 0.4 100 10 --mlp_hidden 256 256
+```
+
+- GIN+ViT
+```bash
+cd model_training/integrated_model
+python GIN_ViT_MLP_main.py integrated_GIN_ViT 2e-4 1e-4 128 0.4 100 10 8 64 256 256 --mlp_hidden 256 256
+```
 
 ### Reference
 
