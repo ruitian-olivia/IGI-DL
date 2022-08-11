@@ -102,7 +102,7 @@ python patches_normalization.py
 
 ##### 3. Nuclei segmentation
 
-Using Hover-Nety<sub>[1]</sub> pretrained on PanNuke Datasety<sub>[2]</sub> to segment nucleus in the HE patches, where the model weight file is saved in **./Hover-Net/hovernet-inference-weights** as pannuke.npz.
+Using Hover-Nety<sup>[1]</sup> pretrained on PanNuke Datasety<sup>[2]</sup> to segment nucleus in the HE patches, where the model weight file is saved in **./Hover-Net/hovernet-inference-weights** as pannuke.npz.
 
 ```bash
 mkdir Hover-Net
