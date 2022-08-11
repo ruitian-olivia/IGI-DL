@@ -84,7 +84,6 @@ def test(model,loader,mse_loss):
 
     return loss / len(loader.dataset), label, pred, x_coor, y_coor
 
-   
 def cal_gene_pearson(label_df, pred_df, predict_gene_list):
     gene_corr_list = []
     gene_log_p_list = []
@@ -131,7 +130,7 @@ def test_spatial_visual(test_result_df, tissue_name, test_corr, target_gene, sav
     p_norm = matplotlib.colors.Normalize(vmin=p_minima, vmax=p_maxima, clip=True)
     p_mapper = cm.ScalarMappable(norm=p_norm, cmap=RdYlBu_10_r.mpl_colormap)
 
-    visium_root_dir = "../../dataset"
+    visium_root_dir = "../dataset"
     visium_root_path = os.path.join(visium_root_dir, tissue_name)
     hires_img_path = os.path.join(visium_root_path, "spatial/tissue_hires_image.png")
     hires_img = cv2.imread(hires_img_path,1)

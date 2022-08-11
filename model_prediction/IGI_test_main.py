@@ -1,7 +1,12 @@
+# Predict the gene spatial expression of new samples using IGI-DL trained on the training samples.
 import os
 import cv2
+import sys
 import json
+import time
+import math
 import random
+import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,54 +14,15 @@ import numpy as np
 import pandas as pd
 import matplotlib
 import matplotlib.cm as cm
+from torchvision import models
 from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
+from torch_geometric.loader import DataLoader
 from palettable.colorbrewer.diverging import RdYlBu_10_r
 
-def setup_seed(seed):
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    torch.backends.cudnn.deterministic = True
+from GNN_CNN_fusion_model import GIN4layer_ResNet18
 
-def train(model,train_loader,optimizer,mse_loss,device):
-    model.train()
-
-    loss_all = 0
-    for data in train_loader:
-        data = data.to(device)
-        optimizer.zero_grad()
-        output = model(data)
-        loss = mse_loss(output, data.y)
-        loss.backward()
-        loss_all += data.num_graphs * loss.item()
-        optimizer.step()
-    return loss_all / len(train_loader.dataset)
-
-def valid(model,loader,mse_loss):
-    model.eval()
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    loss = 0.  
-    
-    label = np.array([])
-    pred = np.array([])
-    for data in loader:
-        data = data.to(device)
-        output = model(data)
-        
-        loss_mean = mse_loss(output, data.y)
-        loss += data.num_graphs * loss_mean.item()
-        
-        _tmp_label = data.y.cpu().detach().numpy()
-        _tmp_pred = output.cpu().detach().numpy()
-
-        label = np.vstack([label,_tmp_label]) if label.size else _tmp_label
-        pred = np.vstack([pred,_tmp_pred]) if pred.size else _tmp_pred
-
-    return loss / len(loader.dataset), label, pred
-
-def test(model,loader,mse_loss):
+def test_function(model,loader):
     model.eval()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     loss = 0.  
@@ -69,9 +35,6 @@ def test(model,loader,mse_loss):
         data = data.to(device)
         output = model(data)
         
-        loss_mean = mse_loss(output, data.y)
-        loss += data.num_graphs * loss_mean.item()
-        
         _tmp_label = data.y.cpu().detach().numpy()
         _tmp_pred = output.cpu().detach().numpy()
         _tmp_x_coor = data.x_coor.cpu().detach().numpy()
@@ -82,13 +45,11 @@ def test(model,loader,mse_loss):
         x_coor = np.hstack([x_coor,_tmp_x_coor]) if x_coor.size else _tmp_x_coor
         y_coor = np.hstack([y_coor,_tmp_y_coor]) if y_coor.size else _tmp_y_coor
 
-    return loss / len(loader.dataset), label, pred, x_coor, y_coor
+    return label, pred, x_coor, y_coor
 
-   
 def cal_gene_pearson(label_df, pred_df, predict_gene_list):
     gene_corr_list = []
     gene_log_p_list = []
-    gene_r2_list = []
     gene_mape_list = []
     
     for idx in range(len(predict_gene_list)):
@@ -131,7 +92,8 @@ def test_spatial_visual(test_result_df, tissue_name, test_corr, target_gene, sav
     p_norm = matplotlib.colors.Normalize(vmin=p_minima, vmax=p_maxima, clip=True)
     p_mapper = cm.ScalarMappable(norm=p_norm, cmap=RdYlBu_10_r.mpl_colormap)
 
-    visium_root_dir = "../../dataset"
+    visium_root_dir = "../dataset"
+
     visium_root_path = os.path.join(visium_root_dir, tissue_name)
     hires_img_path = os.path.join(visium_root_path, "spatial/tissue_hires_image.png")
     hires_img = cv2.imread(hires_img_path,1)
@@ -181,5 +143,64 @@ def test_spatial_visual(test_result_df, tissue_name, test_corr, target_gene, sav
     cb1.set_ticks([])
     fig.savefig(os.path.join(save_path, '{}_{}.png'.format(tissue_name, target_gene)), format='png')
     plt.close()
+    
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('Device: {}'.format(device))
 
+# Load the predicted gene names
+predict_gene_path = '../preprocessing/predict_gene_list.txt'
+with open(predict_gene_path, "r", encoding="utf-8") as f:
+    predict_gene_list = f.read().splitlines()
+num_gene = len(predict_gene_list)
 
+tissue_list = ["test1", "test2"]
+graph_pt_root_path = '../preprocessed_data/graph_image_pt'
+graph_dict = {}
+
+for tissue_name in tissue_list:
+    tissue_graph_path = os.path.join(graph_pt_root_path,tissue_name)
+    graph_tissue_list = []
+
+    for patch_name in os.listdir(tissue_graph_path):
+        graph_load_path = os.path.join(tissue_graph_path,patch_name,'graph_img_data.pt')
+        graph_data = torch.load(graph_load_path)
+        graph_tissue_list.append(graph_data)
+    
+    graph_dict.update({tissue_name: graph_tissue_list})
+
+model_name = "IGI-DL"
+result_save_dir = os.path.join("model_result", model_name)
+if not os.path.exists(result_save_dir):
+    os.makedirs(result_save_dir) 
+
+model_weight_path = 'IGI-DL-weights.pth'
+model = GIN4layer_ResNet18(85, num_gene, 128, [256, 256]).to(device)
+model.load_state_dict(torch.load(model_weight_path, map_location=torch.device(device)))
+
+for tissue_name in tissue_list:
+
+    test_graph_list = graph_dict[tissue_name]
+    test_loader = DataLoader(test_graph_list, batch_size=128, shuffle = False)
+    
+    test_label, test_pred, test_x_coor, test_y_coor = test_function(model, test_loader)
+    
+    test_result_df = cal_gene_pearson(test_label, test_pred, predict_gene_list)
+    test_result_df.sort_values(by="Correlation", inplace=True, ascending=False)
+    test_result_df.to_csv(os.path.join(result_save_dir,'Test_{}_result.csv'.format(tissue_name)), float_format='%.4f')
+    
+    for target_gene in predict_gene_list:
+        fig_save_path = os.path.join(result_save_dir, target_gene)
+        if not os.path.exists(fig_save_path):
+            os.makedirs(fig_save_path)   
+        
+        gene_idx = predict_gene_list.index(target_gene)
+        test_corr, _ = pearsonr(test_label[:, gene_idx], test_pred[:, gene_idx])
+        
+        test_dict = {
+            "label":test_label[:, gene_idx],
+            "pred":test_pred[:, gene_idx],
+            "x_coor":test_x_coor,
+            "y_coor":test_y_coor,
+        } 
+        test_df = pd.DataFrame(test_dict)
+        test_spatial_visual(test_df, tissue_name, test_corr, target_gene, fig_save_path)
