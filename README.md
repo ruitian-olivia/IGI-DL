@@ -138,6 +138,45 @@ cd preprocessing
 python graph_construct.py
 ```
 
+### Model training
+Code in **./model_training**
+
+##### Image-based models
+
+- ResNet18
+```bash
+cd model_training/image_based
+python resnet18_MLP_Y_main.py img_resnet18 False 5e-4 1e-4 0.4 100 10 --mlp_hidden 256 256
+```
+
+- ViT
+```bash
+cd model_training/image_based
+python ViT_MLP_Y_main.py img_ViT 5e-4 1e-4 0.4 100 10 8 64 256 --mlp_hidden 256 256
+```
+
+##### Graph-based models
+
+- GIN
+```bash
+cd model_training/graph_based
+python gin4layer_multi_Y_main.py graph_GIN 2e-4 1e-4 256 0.4 200 20
+```
+
+- GCN
+```bash
+cd model_training/graph_based
+python gcn4layer_multi_Y_main.py graph_GCN 2e-4 1e-4 256 0.4 200 20
+```
+
+- GAT
+```bash
+cd model_training/graph_based
+python gat4layer_multi_Y_main.py graph_GAT 2e-4 1e-4 256 0.4 200 20
+```
+
+##### Integrated models
+
 ### Reference
 
 [1] Graham S, Vu Q D, Raza S E A, et al. Hover-net: Simultaneous segmentation and classification of nuclei in multi-tissue histology images[J]. Medical Image Analysis, 2019, 58: 101563.
