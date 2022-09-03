@@ -15,11 +15,12 @@ for sample_name in sample_list:
     file_root_path = os.path.join("../dataset/", sample_name)
     spot_list_file = os.path.join(file_root_path, "spatial/tissue_positions_list.csv")
     scalefactor_file = os.path.join(file_root_path, "spatial/scalefactors_json.json")
+    HE_path = os.path.join(file_root_path, 'HE_image')
 
-    if len(glob.glob(os.path.join(file_root_path, "*.tif"))) != 0:
-        tissue_img_file = glob.glob(os.path.join(file_root_path, "*.tif"))[0]
+    if len(glob.glob(os.path.join(HE_path, "*.tif"))) != 0:
+        tissue_img_file = glob.glob(os.path.join(HE_path, "*.tif"))[0]
     else:
-        tissue_img_file = glob.glob(os.path.join(file_root_path, "*.jpg"))[0]
+        tissue_img_file = glob.glob(os.path.join(HE_path, "*.jpg"))[0]
 
     spot_coord = pd.read_csv(spot_list_file,
                             header=None, names= ['barcodes','tissue','row','col','imgrow','imgcol'])
