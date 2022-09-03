@@ -112,14 +112,14 @@ git clone https://github.com/simongraham/hovernet_inference.git
 python hovernet_inference/run.py \
 --mode='tile' \
 --model='./hovernet-inference-weights/pannuke.npz' \
---input_dir='../preprocessed_data/img_nmzd_reinhard/HE_nmzd/sample1' \
---output_dir='../preprocessed_data/img_nmzd_reinhard/hover_seg/sample1'
+--input_dir='../preprocessed_data/HE_nmzd/sample1' \
+--output_dir='../preprocessed_data/hover_seg/sample1'
 
 python hovernet_inference/run.py \
 --mode='tile' \
 --model='./hovernet-inference-weights/pannuke.npz' \
---input_dir='../preprocessed_data/img_nmzd_reinhard/HE_nmzd/sample2' \
---output_dir='../preprocessed_data/img_nmzd_reinhard/hover_seg/sample2'
+--input_dir='../preprocessed_data/HE_nmzd/sample2' \
+--output_dir='../preprocessed_data/hover_seg/sample2'
 ```
 
 ##### 4. Nuclei features extraction
