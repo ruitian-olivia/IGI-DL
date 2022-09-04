@@ -87,7 +87,7 @@ for tissue_name in tissue_list:
     graph_tissue_list = []
 
     for patch_name in os.listdir(tissue_graph_path):
-        graph_load_path = os.path.join(tissue_graph_path,patch_name,'graph_data_demo.pt')
+        graph_load_path = os.path.join(tissue_graph_path,patch_name,'graph_img_data.pt')
         graph_data = torch.load(graph_load_path)
         graph_tissue_list.append(graph_data)
     
