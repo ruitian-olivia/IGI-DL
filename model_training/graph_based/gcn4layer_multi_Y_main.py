@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from torch_geometric.loader import DataLoader
 
-from GNN_model import GCN_4layer_weight
+from GNN_model import GCN_4layer
 from GNN_training_function import setup_seed, train, valid, test, cal_gene_pearson, mape, test_spatial_visual
 from pytorchtools import EarlyStopping
 
@@ -143,7 +143,7 @@ for run in range(runs):
     dataload_end  = time.time()
     print("Run{:03d} data loader time: {:.2f}s ".format(run, dataload_end-dataload_start))
 
-    model = GCN_4layer_weight(num_feature=num_feature, num_gene=num_gene, nhid=nhid).to(device)
+    model = GCN_4layer(num_feature=num_feature, num_gene=num_gene, nhid=nhid).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay = weight_decay)
     mse_loss = nn.MSELoss().to(device)     
     
@@ -207,7 +207,7 @@ print("The ratio of gene correlation greater than {:.3f}: {:.3f}".format(corr_th
 
 vis_start = time.time()
 for tissue_name in tissue_list:
-    model = GCN_4layer_weight(num_feature=num_feature, num_gene=num_gene, nhid=nhid).to(device)
+    model = GCN_4layer(num_feature=num_feature, num_gene=num_gene, nhid=nhid).to(device)
     mse_loss = nn.MSELoss().to(device)
     model.load_state_dict(torch.load("{}/model_{}_test_{}.pth".format(model_save_dir,model_name,tissue_name)))
     test_graph_list = graph_dict[tissue_name]
