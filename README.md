@@ -41,7 +41,7 @@ dataset
 filtered_feature_bc_matrix: Feature barcode matrices that contains only tissue-associated barcodes.
 spatial: Folder containing Visium-specific outs (QC images to check image processing pipeline, downsampled input images, and files that describe spot barcode locations in the images)
 
-Preprocessed HE patches and constructed Nuclei-Graphs are saved in **./preprocessed_data**, where **./preprocessed_data/HE_patches** contains HE patches extracted according to the coordinates of the spot, **./preprocessed_data/HE_patches** containes patches after color normalization, **./preprocessed_data/hover_seg** containes patches after color normalization
+Preprocessed HE patches and constructed Nuclei-Graphs are saved in **./preprocessed_data**, where **HE_patches** contains HE patches extracted according to the coordinates of the spot, **HE_nmzd** containes patches after color normalization, **hover_seg** containes segmented nuclei in patches, **nuclei_seg_features** containes extracted nuclei features, **nuclei_standar_features** containes standardized nuclei features, **SVGs_label** containes transformed expression level for target genes, and **graph_image_pt** containes constructed Nuclei-Graphs.
 
 ```bash
 preprocessed_data
@@ -69,7 +69,7 @@ preprocessed_data
 │  └───sample1
 │    │  ...
 │
-└───y_label_df
+└───SVGs_label
 │  └───sample1
 │    │  ...
 │
@@ -100,7 +100,7 @@ python patches_extract.py
 cd preprocessing
 python patches_normalization.py
 ```
-Normalized HE patches are saved in **./preprocessed_data/HE_nmzd**
+Normalized HE patches are saved in **./preprocessed_data/HE_nmzd**.
 
 ###### 1.3 Nuclei segmentation
 
@@ -138,7 +138,7 @@ cd preprocessing
 python nuclei_features_standardization.py
 ```
 
-Standardized nuclei features for each patch are saves in **./preprocessed_data/nuclei_standar_features**
+Standardized nuclei features for each patch are saves in **./preprocessed_data/nuclei_standar_features**.
 
 ##### 2. Gene expression preprocessing
 ###### 2.1 Find SVGs using SPARKX<sup>[3]</sup>
@@ -147,7 +147,7 @@ Standardized nuclei features for each patch are saves in **./preprocessed_data/n
 cd preprocessing
 Rscript SPARKX_SVGs.r
 ```
-SVGs for each tissue sample are saved in **./preprocessed_data/SVG_top2000**
+SVGs for each tissue sample are saved in **./preprocessed_data/SVG_top2000**.
 
 ###### 2.2 Target genes selection
 
@@ -155,7 +155,7 @@ SVGs for each tissue sample are saved in **./preprocessed_data/SVG_top2000**
 cd preprocessing
 python target_genes_selection.py
 ```
-Target genes list is saved in **SVGs_SPARKX.txt** 
+Target genes list is saved in **SVGs_SPARKX.txt** .
 
 ###### 2.3 Count data transformation
 
@@ -163,7 +163,7 @@ Target genes list is saved in **SVGs_SPARKX.txt**
 cd preprocessing
 python gene_count_tranform.py
 ```
-Transformed count data for each tissue sample are saved in **./preprocessed_data/SVGs_label**
+Transformed count data for each tissue sample are saved in **./preprocessed_data/SVGs_label**.
 
 
 ##### 3. Nuclei-Graphs construction
@@ -173,7 +173,7 @@ cd preprocessing
 python graph_construct.py
 ```
 
-Constructed Nuclei-Graphs for patches in each tissue sample are saved in **./preprocessed_data/graph_SVGs**
+Constructed Nuclei-Graphs for patches in each tissue sample are saved in **./preprocessed_data/graph_SVGs**.
 
 ### Model training
 Code in **./model_training**
