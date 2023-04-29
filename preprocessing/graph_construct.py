@@ -1,9 +1,11 @@
 # Construct a Nuclei-Graph for each HE patch
+
 import os
 import math
 import json
 import torch
 import argparse
+import multiprocessing
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -19,15 +21,18 @@ patch_transform = transforms.Compose([
 # critical distance 20 \mu m, pix width 0.5 \mu m
 critical = 20/0.5
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5']
-
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
+        
 visium_root_dir = '../dataset'
 patch_root_path = "../preprocessed_data/HE_nmzd"
 feature_root_path = '../preprocessed_data/nuclei_standar_features'
-label_root_path = '../preprocessed_data/y_label_df'
-graph_img_root_path = '../preprocessed_data/graph_image_pt'
 
-for tissue_name in tissue_list:
+label_root_path = '../preprocessed_data/SVGs_label'
+graph_img_root_path = '../preprocessed_data/graph_SVGs'
+
+# for tissue_name in tissue_list:
+def graph_construct(tissue_name):
+    print(tissue_name)
     visium_path = os.path.join(visium_root_dir,tissue_name)
     patch_path = os.path.join(patch_root_path,tissue_name)
     scalefactor_file = os.path.join(visium_path, "spatial/scalefactors_json.json")
@@ -50,14 +55,9 @@ for tissue_name in tissue_list:
     feature_path = os.path.join(feature_root_path,tissue_name)
     label_path = os.path.join(label_root_path,tissue_name)
 
-    log_norm_path = os.path.join(label_path,'log_norm_df.csv')
+    log_norm_path = os.path.join(label_path,'NormLog_df.csv')
     log_norm_df = pd.read_csv(log_norm_path, index_col = 0)
-    
-    N_count_path = os.path.join(label_path,'N_count_df.csv')
-    N_count_df = pd.read_csv(N_count_path, index_col = 0)
-    
-    count_target_path = os.path.join(label_path,'count_target_df.csv')
-    count_target_df = pd.read_csv(count_target_path, index_col = 0)
+
 
     for file_name in os.listdir(feature_path):
         if file_name.endswith('.csv'):
@@ -114,20 +114,6 @@ for tissue_name in tissue_list:
                 print("torch.isinf(y_log_tensor).any()--path:", node_feature_path)
             if torch.isnan(y_log_tensor).any():
                 print("torch.isnan(y_log_tensor).any()--path:", node_feature_path)
-            
-            y_N_count = np.array(N_count_df.loc[[patch_name]])
-            y_N_tensor = torch.tensor(y_N_count, dtype=torch.int)
-            if torch.isinf(y_N_tensor).any():
-                print("torch.isinf(y_N_tensor).any()--path:", node_feature_path)
-            if torch.isnan(y_N_tensor).any():
-                print("torch.isnan(y_N_tensor).any()--path:", node_feature_path)
-            
-            y_count_target = np.array(count_target_df.loc[[patch_name]])
-            y_count_tensor = torch.tensor(y_count_target, dtype=torch.int)
-            if torch.isinf(y_count_tensor).any():
-                print("torch.isinf(y_count_tensor).any()--path:", node_feature_path)
-            if torch.isnan(y_count_tensor).any():
-                print("torch.isnan(y_count_tensor).any()--path:", node_feature_path)
 
             x_coor = np.array(spot_coord_tissue.loc[[patch_name]]['hires_row'])
             x_coor_tensor = torch.tensor(x_coor, dtype=torch.int)
@@ -141,7 +127,7 @@ for tissue_name in tissue_list:
             
             graph_data = Data(x=feature_tensor, edge_index=edge_index_tensor.t().contiguous(),\
                               edge_attr=edge_attr_tensor, pos=pos_tensor,\
-                              y=y_log_tensor, N_count=y_N_tensor, count_target=y_count_tensor,\
+                              y=y_log_tensor, \
                               x_coor=x_coor_tensor, y_coor=y_coor_tensor, patch_img=patch_img_tensor)
             
             graph_save_path = os.path.join(graph_img_root_path,tissue_name,patch_name)
@@ -151,3 +137,6 @@ for tissue_name in tissue_list:
             torch.save(graph_data, os.path.join(graph_save_path, 'graph_img_data.pt'))
             
             del graph_data
+
+pool_obj = multiprocessing.Pool()
+answer = pool_obj.map(graph_construct,tissue_list)

@@ -82,7 +82,7 @@ print('Device: {}'.format(device))
 if device=='cpu':
     sys.exit(0)
 
-tissue_list = ['S105866', 'S1055979', 'S1056017', 'S1061143', 'M1037', 'M1042']
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
 graph_pt_root_path = '../../preprocessed_data/graph_SVGs'
 graph_dict = {}
 

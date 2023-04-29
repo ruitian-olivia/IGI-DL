@@ -81,26 +81,28 @@ preprocessed_data
 ### Data preprocessing
 Code in **./preprocessing**
 
-<p align="center">
+<!-- <p align="center">
     <img src="figures/preprocessing_flowchart.png" width="640"> <br />
     <em> The flowchart of data preprocessing</em>
-</p>
+</p> -->
 
-##### 1. HE patches extraction
+##### 1. Image preprocessing
+###### 1.1 HE patches extraction
 
 ```bash
 cd preprocessing
 python patches_extract.py
 ```
 
-##### 2. HE patches color normalization
+###### 1.2 HE patches color normalization
 
 ```bash
 cd preprocessing
 python patches_normalization.py
 ```
+Normalized HE patches are saved in **./preprocessed_data/HE_nmzd**
 
-##### 3. Nuclei segmentation
+###### 1.3 Nuclei segmentation
 
 Using Hover-Nety<sup>[1]</sup> pretrained on PanNuke Datasety<sup>[2]</sup> to segment nucleus in the HE patches, where the model weight file is saved in **./Hover-Net/hovernet-inference-weights** as pannuke.npz.
 
@@ -122,33 +124,56 @@ python hovernet_inference/run.py \
 --output_dir='../../preprocessed_data/hover_seg/sample2'
 ```
 
-##### 4. Nuclei features extraction
+###### 1.4 Nuclei features extraction
 
 ```bash
 cd preprocessing
 python nuclei_features_extract.py
 ```
 
-##### 5. Nuclei features standardization
+###### 1.5 Nuclei features standardization
 
 ```bash
 cd preprocessing
 python nuclei_features_standardization.py
 ```
 
-##### 6. Gene expression transformation
+Standardized nuclei features for each patch are saves in **./preprocessed_data/nuclei_standar_features**
+
+##### 2. Gene expression preprocessing
+###### 2.1 Find SVGs using SPARKX<sup>[3]</sup>
 
 ```bash
 cd preprocessing
-python gene_count_transform.py
+Rscript SPARKX_SVGs.r
 ```
+SVGs for each tissue sample are saved in **./preprocessed_data/SVG_top2000**
 
-##### 7. Nuclei-Graphs construction
+###### 2.2 Target genes selection
+
+```bash
+cd preprocessing
+python target_genes_selection.py
+```
+Target genes list is saved in **SVGs_SPARKX.txt** 
+
+###### 2.3 Count data transformation
+
+```bash
+cd preprocessing
+python gene_count_tranform.py
+```
+Transformed count data for each tissue sample are saved in **./preprocessed_data/SVGs_label**
+
+
+##### 3. Nuclei-Graphs construction
 
 ```bash
 cd preprocessing
 python graph_construct.py
 ```
+
+Constructed Nuclei-Graphs for patches in each tissue sample are saved in **./preprocessed_data/graph_SVGs**
 
 ### Model training
 Code in **./model_training**
@@ -234,3 +259,5 @@ python IGI_test_main.py
 [1] Graham S, Vu Q D, Raza S E A, et al. Hover-net: Simultaneous segmentation and classification of nuclei in multi-tissue histology images[J]. Medical Image Analysis, 2019, 58: 101563.
 
 [2] Gamper J, Alemi Koohbanani N, Benet K, et al. Pannuke: an open pan-cancer histology dataset for nuclei instance segmentation and classification[C]//European congress on digital pathology. Springer, Cham, 2019: 11-19.
+
+[3] Zhu J, Sun S, Zhou X. SPARK-X: non-parametric modeling enables scalable and robust detection of spatial expression patterns for large spatial transcriptomic studies[J]. Genome Biology, 2021, 22(1): 1-25.

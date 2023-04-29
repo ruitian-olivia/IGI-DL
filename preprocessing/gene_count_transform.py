@@ -8,17 +8,16 @@ import numpy as np
 import pandas as pd
 
 # Load selected target genes list
-predict_gene_path = './predict_gene_list.txt'
+predict_gene_path = './SVGs_SPARKX.txt'
 with open(predict_gene_path, "r", encoding="utf-8") as f:
     target_y_list = f.read().splitlines()
 
 data_root_dir = "../dataset"
-save_root_path = '../preprocessed_data/y_label_df'
+save_root_path = '../preprocessed_data/SVGs_label'
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5']
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
 
 for tissue_name in tissue_list:
-    
     root_path = os.path.join(data_root_dir, tissue_name)
     
     matrix_dir = os.path.join(root_path, "filtered_feature_bc_matrix")
@@ -38,11 +37,9 @@ for tissue_name in tissue_list:
     N_count_df = pd.DataFrame(UMI_row_sum, columns=["Count_N"])
     print(tissue_name,"N_count_df.median():", N_count_df.median())
     print("N_count_df:",(np.nan in N_count_df))
-    N_count_df.to_csv(os.path.join(save_count_path,'N_count_df.csv'), header=True)
     
     count_target_df = mat_df.loc[:, target_y_list]
     print("count_target_df:",count_target_df.isnull().values.any())
-    count_target_df.to_csv(os.path.join(save_count_path,'count_target_df.csv'), header=True)
     
     # pseudo counts construction
     pseudo_count_df = count_target_df + 1
@@ -50,6 +47,6 @@ for tissue_name in tissue_list:
     transformed_count_df = pseudo_count_df.div((mat_df+1).sum(axis=1), axis='rows') * 1000000
     # log transformation
     log_norm_df = np.log(transformed_count_df)
-    print("log_norm_df", log_norm_df.isnull().values.any())
-    log_norm_df.to_csv(os.path.join(save_count_path,'log_norm_df.csv'), header=True, float_format='%.4f')
+    print("NormLog_df", log_norm_df.isnull().values.any())
+    log_norm_df.to_csv(os.path.join(save_count_path,'NormLog_df.csv'), header=True, float_format='%.4f')
 
