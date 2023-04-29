@@ -2,10 +2,10 @@
 
 Source code for Integrated Graph and Image Deep Learning (IGI-DL).
 
-<p align="center">
+<!-- <p align="center">
     <img src="figures/model_archi.png" width="640"> <br />
     <em> The schematics of the designed IGI-DL model</em>
-</p>
+</p> -->
 
 
 ### Data structure
@@ -158,13 +158,13 @@ Code in **./model_training**
 - ResNet18
 ```bash
 cd model_training/image_based
-python resnet18_MLP_Y_main.py img_resnet18 False 5e-4 1e-4 0.4 100 10 --mlp_hidden 256 256
+python resnet18_MLP_Y_main.py img_resnet18 2e-4 1e-4 300 30 --mlp_hidden 512 256 256
 ```
 
 - ViT
 ```bash
 cd model_training/image_based
-python ViT_MLP_Y_main.py img_ViT 5e-4 1e-4 0.4 100 10 8 64 256 --mlp_hidden 256 256
+python ViT_MLP_Y_main.py img_ViT 2e-4 1e-4 300 30 8 64 256 --mlp_hidden 512 256 256
 ```
 
 ##### Graph-based models
@@ -172,19 +172,19 @@ python ViT_MLP_Y_main.py img_ViT 5e-4 1e-4 0.4 100 10 8 64 256 --mlp_hidden 256 
 - GIN
 ```bash
 cd model_training/graph_based
-python gin4layer_multi_Y_main.py graph_GIN 2e-4 1e-4 256 0.4 200 20
+python gin4layer_multi_Y_main.py graph_GIN 2e-4 1e-4 256 300 30
 ```
 
 - GCN
 ```bash
 cd model_training/graph_based
-python gcn4layer_multi_Y_main.py graph_GCN 2e-4 1e-4 256 0.4 200 20
+python gcn4layer_multi_Y_main.py graph_GCN 2e-4 1e-4 256 300 30
 ```
 
 - GAT
 ```bash
 cd model_training/graph_based
-python gat4layer_multi_Y_main.py graph_GAT 2e-4 1e-4 256 0.4 200 20
+python gat4layer_multi_Y_main.py graph_GAT 2e-4 1e-4 256 300 30
 ```
 
 ##### Integrated models
@@ -192,25 +192,25 @@ python gat4layer_multi_Y_main.py graph_GAT 2e-4 1e-4 256 0.4 200 20
 - GIN+ResNet18
 ```bash
 cd model_training/integrated_model
-python GIN_ResNet18_BN_MLP_main.py integrated_GIN_resnet False 2e-4 1e-4 128 0.4 100 10 --mlp_hidden 256 256
+python GIN_Res18_main.py integrated_GIN_resnet 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
 ```
 
 - GCN+ResNet18
 ```bash
 cd model_training/integrated_model
-python GCN_ResNet18_BN_MLP_main.py integrated_GCN_resnet False 2e-4 1e-4 128 0.4 100 10 --mlp_hidden 256 256
+python GCN_Res18_main.py integrated_GCN_resnet 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
 ```
 
 - GAT+ResNet18
 ```bash
 cd model_training/integrated_model
-python GAT_ResNet18_BN_MLP_main.py integrated_GCN_resnet False 2e-4 1e-4 128 0.4 100 10 --mlp_hidden 256 256
+python GAT_Res18_main.py integrated_GCN_resnet 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
 ```
 
 - GIN+ViT
 ```bash
 cd model_training/integrated_model
-python GIN_ViT_MLP_main.py integrated_GIN_ViT 2e-4 1e-4 128 0.4 100 10 8 64 256 256 --mlp_hidden 256 256
+python GIN_ViT_MLP_main.py integrated_GIN_ViT 2e-4 1e-4 256 300 30 8 64 256 256 --mlp_hidden 512 256 256
 ```
 ### IGI-DL prediction
 Code in **./model_prediction**

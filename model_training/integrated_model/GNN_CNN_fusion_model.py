@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
-from torch_geometric.nn import GINConv, GCNConv, GATConv, BatchNorm
+from torch_geometric.nn import GINConv, GCNConv, GATConv, BatchNorm, PNAConv
 from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
 from torch.nn import Sequential as Seq, Linear as Lin, ReLU
 
@@ -234,7 +234,7 @@ class GAT4layer_ResNet18(nn.Module):
         y = torch.squeeze(self.head(fusion_x), dim=1)
 
         return y
-
+    
 class GIN4layer_ViT(nn.Module):
     def __init__(self, num_feature, num_gene, nhid=256, attn_heads=8, dim_head=64, hidden_features=256, out_features=256, mlp_hidden_list=[256,256]):
         super(GIN4layer_ViT, self).__init__()

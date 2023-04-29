@@ -1,5 +1,6 @@
 # Training Graph-based GCN model, with leave-one-patient validation to evaluate the performance
 import os
+import sys
 import cv2
 import json
 import time
@@ -17,7 +18,7 @@ from scipy.stats import pearsonr
 from torch_geometric.loader import DataLoader
 
 from GNN_model import GCN_4layer
-from GNN_training_function import setup_seed, train, valid, test, cal_gene_pearson, mape, test_spatial_visual
+from GNN_training_function import setup_seed, train, valid, test, cal_gene_corr, test_spatial_visual
 from pytorchtools import EarlyStopping
 
 # model training arg parser
@@ -44,11 +45,6 @@ parser.add_argument(
     help="Dimension of the hidden layer",
 )
 parser.add_argument(
-    "corr_thresh",
-    type=float,
-    help="Threshold of gene correlation",
-)
-parser.add_argument(
     "epochs",
     type=int,
     help="The number of epochs",
@@ -65,7 +61,6 @@ try:
     learning_rate = args.learning_rate
     weight_decay = args.weight_decay
     nhid = args.nhid
-    corr_thresh = args.corr_thresh
     epochs = args.epochs
     patience = args.patience
 except:
@@ -74,9 +69,11 @@ except:
 setup_seed(42)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Device: {}'.format(device))
+if not torch.cuda.is_available():
+    sys.exit ()
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5']
-graph_pt_root_path = '../../preprocessed_data/graph_image_pt'
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
+graph_pt_root_path = '../../preprocessed_data/graph_SVGs'
 graph_dict = {}
 
 for tissue_name in tissue_list:
@@ -91,7 +88,7 @@ for tissue_name in tissue_list:
     graph_dict.update({tissue_name: graph_tissue_list})
 
 # Load the predicted gene names
-predict_gene_path = '../../preprocessing/predict_gene_list.txt'
+predict_gene_path = '../../preprocessing/SVGs_SPARKX.txt'
 with open(predict_gene_path, "r", encoding="utf-8") as f:
     predict_gene_list = f.read().splitlines()
 num_gene = len(predict_gene_list)
@@ -102,9 +99,10 @@ runs = len(tissue_list)
 
 train_loss = np.zeros((runs,epochs))
 val_loss = np.zeros((runs,epochs))
-val_corr = np.zeros((runs,epochs))
-val_log_p = np.zeros((runs,epochs))
-val_mape = np.zeros((runs,epochs))
+val_pear_corr = np.zeros((runs,epochs))
+val_pear_logp = np.zeros((runs,epochs))
+val_spea_corr = np.zeros((runs,epochs))
+val_spea_logp = np.zeros((runs,epochs))
 min_loss = 1e10*np.ones(runs)
 
 test_loss = np.zeros(runs)
@@ -155,17 +153,23 @@ for run in range(runs):
         train_loss[run,epoch] = loss
         val_loss[run,epoch], val_label, val_pred = valid(model,val_loader,mse_loss)
         
-        val_result_df = cal_gene_pearson(val_label, val_pred, predict_gene_list)
-        val_corr[run,epoch] = val_result_df["Correlation"].mean()
-        val_log_p[run,epoch] = val_result_df["Log_p_value"].mean()
-        val_mape[run,epoch] = val_result_df["MAPE"].mean()
-
+        val_result_df = cal_gene_corr(val_label, val_pred, predict_gene_list)
+        val_pear_corr[run,epoch] = val_result_df["Pear_corr"].mean()
+        val_pear_logp[run,epoch] = val_result_df["Pear_log_p"].mean()
+        val_spea_corr[run,epoch] = val_result_df["Spea_corr"].mean()
+        val_spea_logp[run,epoch] = val_result_df["Spea_log_p"].mean()
+        
+          
         epoch_counter += 1
         epoch_end  = time.time()
-          
-        print("Run: {:03d}, Epoch: {:03d}, Train time: {:.2f}s, Train loss: {:.5f}, Val loss: {:.5f}, Val corr: {:.5f}, Val log_p:{:.5f}, Val MAPE:{:.5f}"\
-              .format(run+1, epoch+1, epoch_end-epoch_start, train_loss[run,epoch], val_loss[run,epoch],\
-                      val_corr[run,epoch], val_log_p[run,epoch], val_mape[run,epoch]))
+        print("Run: {:03d}, Epoch: {:03d}, Epoch time: {:.2f}s,\
+              Train loss: {:.5f}, Val loss: {:.5f},\
+              Val pearson corr: {:.5f}, Val pearson log_p:{:.5f},\
+              Val spearman corr: {:.5f}, Val spearman log_p:{:.5f}"\
+              .format(run+1, epoch+1, epoch_end-epoch_start,\
+                    train_loss[run,epoch], val_loss[run,epoch],\
+                    val_pear_corr[run,epoch], val_pear_logp[run,epoch],\
+                    val_spea_corr[run,epoch], val_spea_logp[run,epoch]))
         
         early_stopping(val_loss[run, epoch], model)
         if early_stopping.early_stop:
@@ -178,7 +182,7 @@ for run in range(runs):
     test_loss[run], test_label, test_pred, test_x_coor, test_y_coor = test(model,test_loader,mse_loss)
     print("Test tissue name: {},  Test MSE: {:.5f}".format(tissue_name, test_loss[run]))
     
-    test_result_df = cal_gene_pearson(test_label, test_pred, predict_gene_list)
+    test_result_df = cal_gene_corr(test_label, test_pred, predict_gene_list)
     test_result_df.to_csv(os.path.join(result_save_dir,'Test_{}_result.csv'.format(tissue_name)), float_format='%.4f')
     result_df_list.append(test_result_df)
 
@@ -190,20 +194,22 @@ result_df_concat = pd.concat(result_df_list)
 by_row_index = result_df_concat.groupby(result_df_concat.index)
 result_df_means = by_row_index.mean()
 result_df_std = by_row_index.std()
-result_df_std.columns=['Corr_std','Log_p_std','MAPE_std']
+result_df_std.columns=['Pear_corr_std','Pear_log_p_std', 'Spea_corr_std','Spea_log_p_std']
 result_df_all = pd.concat([result_df_means, result_df_std], axis=1)
-column_order = ['Correlation', 'Corr_std', 'Log_p_value', 'Log_p_std', 'MAPE', 'MAPE_std']
-result_df_all = result_df_all[column_order]
-result_df_all.sort_values(by="Correlation", inplace=True, ascending=False)
-result_df_all.to_csv(os.path.join(result_save_dir,'result_df_all.csv'), float_format='%.4f')
+pear_result_df = result_df_all.loc[:, ('Pear_corr', 'Pear_corr_std', 'Pear_log_p', 'Pear_log_p_std')]
+pear_result_df.sort_values(by="Pear_corr", inplace=True, ascending=False)
+pear_result_df.to_csv(os.path.join(result_save_dir,'result_df_Pearson.csv'), float_format='%.4f')
+spea_result_df = result_df_all.loc[:, ('Spea_corr', 'Spea_corr_std', 'Spea_log_p', 'Spea_log_p_std')]
+spea_result_df.sort_values(by="Spea_corr", inplace=True, ascending=False)
+spea_result_df.to_csv(os.path.join(result_save_dir,'result_df_Spearman.csv'), float_format='%.4f')
 
 result_mean = result_df_all.mean(axis=0)
+result_median = result_df_all.median(axis=0)
 print("------------Summary------------")
 print("Result Mean:\n", result_mean)
+print("Result Median:\n", result_median)
 
-result_visual_df = result_df_all[result_df_all['Correlation'] > corr_thresh] 
-visual_gene_list = list(result_visual_df.index)
-print("The ratio of gene correlation greater than {:.3f}: {:.3f}".format(corr_thresh, len(visual_gene_list)/num_gene))
+visual_gene_list = list(pear_result_df.index)[:2]
 
 vis_start = time.time()
 for tissue_name in tissue_list:
@@ -216,7 +222,7 @@ for tissue_name in tissue_list:
     _, test_label, test_pred, test_x_coor, test_y_coor = test(model,test_loader,mse_loss)
     
     for target_gene in visual_gene_list:
-        target_gene_corr = result_visual_df.loc[target_gene, "Correlation"]
+        target_gene_corr = pear_result_df.loc[target_gene, "Pear_corr"]
         fig_save_path = os.path.join(result_save_dir, "{:.3f}_{}".format(target_gene_corr,target_gene))
         if not os.path.exists(fig_save_path):
             os.makedirs(fig_save_path)   
@@ -241,10 +247,10 @@ for run in range(runs):
     t_loss = train_loss[run][np.where(train_loss[run] > 0)]
     v_loss = val_loss[run][np.where(val_loss[run] > 0)]
 
-    corr = val_corr[run][np.where(val_corr[run] > 0)]
-    mape = val_mape[run][np.where(val_mape[run] > 0)]
-
-    fig = plt.figure(dpi=300,figsize=(15,8),facecolor='white')
+    pear_corr = val_pear_corr[run][np.where(val_pear_corr[run] > 0)]
+    spea_corr = val_spea_corr[run][np.where(val_spea_corr[run] > 0)]
+    
+    fig = plt.figure(dpi=100,figsize=(15,8),facecolor='white')
     ax = fig.add_subplot(121)
     ax.set_title('Training & Validation Loss Trends (Except {})'.format(tissue_name))
     ax.plot(range(1,len(t_loss)+1),t_loss, label='Training Loss')
@@ -258,17 +264,17 @@ for run in range(runs):
     ax.legend()
 
     bx = fig.add_subplot(122)
-    bx.set_title('Validation Correlation & MAPE (Run {})'.format(run))
-    bx.plot(range(1,len(corr)+1),corr, label='Validation Correlation')
-    bx.plot(range(1,len(mape)+1),mape,label='Validation MAPE')
+    bx.set_title('Validation Corr (Run {})'.format(run))
+    bx.plot(range(1,len(pear_corr)+1), pear_corr, label='Validation Pearson Corr')
+    bx.plot(range(1,len(spea_corr)+1), spea_corr, label='Validation Spearman Corr')    
     bx.set_xlabel('epochs')
     bx.set_ylabel('Value')
     bx.set_ylim(0, 1) # consistent scale
-    bx.set_xlim(0, len(mape)+1) # consistent scale
     bx.legend()
 
     fig.savefig(os.path.join(result_save_dir, 'run{}_traning_process.png'.format(run)), format='png')
     plt.close()
+
 
 training_record_dir = os.path.join(result_save_dir,'training_record')
 if not os.path.exists(training_record_dir):
@@ -276,7 +282,7 @@ if not os.path.exists(training_record_dir):
 
 np.savetxt(os.path.join(training_record_dir, 'train_loss_record.csv'), train_loss, delimiter=',', fmt='%.4f')
 np.savetxt(os.path.join(training_record_dir, 'val_loss_record.csv'), val_loss, delimiter=',', fmt='%.4f')
-np.savetxt(os.path.join(training_record_dir, 'val_corr_record.csv'), val_corr, delimiter=',', fmt='%.4f')
-np.savetxt(os.path.join(training_record_dir, 'val_mape_record.csv'), val_mape, delimiter=',', fmt='%.4f')
+np.savetxt(os.path.join(training_record_dir, 'val_pear_corr_record.csv'), val_pear_corr, delimiter=',', fmt='%.4f')
+np.savetxt(os.path.join(training_record_dir, 'val_spea_corr_record.csv'), val_spea_corr, delimiter=',', fmt='%.4f')
 np.savetxt(os.path.join(training_record_dir, 'test_loss_record.csv'), test_loss, delimiter=',', fmt='%.4f')
  

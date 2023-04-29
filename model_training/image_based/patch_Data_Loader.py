@@ -8,21 +8,20 @@ from torch.utils.data import Dataset
 
 class patch_train_data(Dataset):
 
-    def __init__(self, root, exclude_tissue, transform):
+    def __init__(self, root, tissue_list, exclude_tissue, transform):
         super(patch_train_data, self).__init__()
 
-        label_root_path = '../../preprocessed_data/y_label_df'
+        label_root_path = '../../preprocessed_data/SVGs_label'
         self.root = root
         self.exclude_tissue = exclude_tissue
         self.transform = transform
-
-        tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5']
+        self.tissue_list = tissue_list
 
         img_list = []
         for tissue_id in tissue_list:
             if tissue_id != exclude_tissue:
                 tissue_path = os.path.join(root,tissue_id)
-                label_path = os.path.join(label_root_path,tissue_id,'log_norm_df.csv')
+                label_path = os.path.join(label_root_path,tissue_id,'NormLog_df.csv')
                 label_df = pd.read_csv(label_path, index_col = 0)
 
                 for img_file in os.listdir(tissue_path):
@@ -53,7 +52,7 @@ class patch_test_data(Dataset):
     def __init__(self, root, test_tissue, transform):
         super(patch_test_data, self).__init__()
 
-        label_root_path = '../../preprocessed_data/y_label_df'
+        label_root_path = '../../preprocessed_data/SVGs_label'
         visium_root_dir = "../../dataset"
         self.root = root
         self.test_tissue = test_tissue
@@ -61,7 +60,7 @@ class patch_test_data(Dataset):
 
         img_list = []
         tissue_path = os.path.join(root,test_tissue)
-        label_path = os.path.join(label_root_path,test_tissue,'log_norm_df.csv')
+        label_path = os.path.join(label_root_path,test_tissue,'NormLog_df.csv')
         label_df = pd.read_csv(label_path, index_col = 0)
 
         visium_path = os.path.join(visium_root_dir,test_tissue)
