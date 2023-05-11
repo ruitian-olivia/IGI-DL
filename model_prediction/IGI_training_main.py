@@ -1,4 +1,5 @@
 # Save the weights of IGI-DL (GIN+ResNet18) trained on the all training samples
+
 import os
 import cv2
 import sys
@@ -19,16 +20,12 @@ from scipy.stats import pearsonr
 from torch_geometric.loader import DataLoader
 
 from GNN_CNN_fusion_model import GIN4layer_ResNet18
-from GNN_CNN_training_function import setup_seed, train, valid, cal_gene_pearson, mape
+from GNN_CNN_training_function import setup_seed, train, valid, cal_gene_corr
 from pytorchtools import EarlyStopping
 
 # model training arg parser
 parser = argparse.ArgumentParser(description="Arguments for model training.")
 
-parser.add_argument(
-    "imagenet_flag",
-    type=bool
-)
 parser.add_argument(
     "learning_rate",
     type=float,
@@ -43,11 +40,6 @@ parser.add_argument(
     "nhid",
     type=int,
     help="Dimension of the hidden layer",
-)
-parser.add_argument(
-    "corr_thresh",
-    type=float,
-    help="Threshold of gene correlation",
 )
 parser.add_argument(
     "epochs",
@@ -69,10 +61,8 @@ args = parser.parse_args()
 
 try:
     learning_rate = args.learning_rate
-    imagenet_flag = args.imagenet_flag
     weight_decay = args.weight_decay
     nhid = args.nhid
-    corr_thresh = args.corr_thresh
     epochs = args.epochs
     patience = args.patience
     mlp_hidden = args.mlp_hidden
@@ -82,11 +72,12 @@ except:
 setup_seed(42)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Device: {}'.format(device))
-if not torch.cuda.is_available():
-    sys.exit ()
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5']
-graph_pt_root_path = '../preprocessed_data/graph_image_pt'
+if device=='cpu':
+    sys.exit(0)
+
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
+graph_pt_root_path = '../../preprocessed_data/graph_SVGs'
 graph_dict = {}
 
 for tissue_name in tissue_list:
@@ -101,7 +92,7 @@ for tissue_name in tissue_list:
     graph_dict.update({tissue_name: graph_tissue_list})
 
 # Load the predicted gene names
-predict_gene_path = '../preprocessing/predict_gene_list.txt'
+predict_gene_path = '../../preprocessing/SVGs_SPARKX.txt'
 with open(predict_gene_path, "r", encoding="utf-8") as f:
     predict_gene_list = f.read().splitlines()
 num_gene = len(predict_gene_list)
@@ -109,17 +100,19 @@ num_gene = len(predict_gene_list)
 batch_size = 512
 num_feature = 85
 
-train_loss = np.zeros(epochs)
-val_loss = np.zeros(epochs)
-val_corr = np.zeros(epochs)
-val_log_p = np.zeros(epochs)
-val_mape = np.zeros(epochs)
+train_loss = np.zeros((epochs))
+val_loss = np.zeros((epochs))
+val_pear_corr = np.zeros((epochs))
+val_pear_logp = np.zeros((epochs))
+val_spea_corr = np.zeros((epochs))
+val_spea_logp = np.zeros((epochs))
 min_loss = 1e10
 
 train_val_graph_list = []
 
 for key, value in graph_dict.items():
-    train_val_graph_list += value
+    if key != tissue_name:
+        train_val_graph_list += value
 
 random.shuffle(train_val_graph_list)
 num_train_val = len(train_val_graph_list)
@@ -130,57 +123,33 @@ val_loader = DataLoader(train_val_graph_list[num_train:-1], batch_size=batch_siz
 
 model = GIN4layer_ResNet18(85, num_gene, nhid, mlp_hidden).to(device)
 
-if imagenet_flag:
-    resnet18 = models.resnet18(pretrained=True).to(device)
-    pretrained_dict = resnet18.state_dict()
-
-    model_dict = model.state_dict()
-    model_keys = []
-    for k, v in model_dict.items():
-        model_keys.append(k)
-    print(model_keys)
-
-    model_resnet_dict = model.resnet.state_dict()
-    model_resnet_keys = []
-    for k, v in model_resnet_dict.items():
-        model_resnet_keys.append(k)
-    print(model_resnet_keys)
-    
-    i = 0
-    for k, v in pretrained_dict.items():
-        model_dict[model_keys[i]] = v
-        i += 1
-        if i >= len(model_resnet_keys):
-            break
-
-    model.load_state_dict(model_dict)
-else:
-    pass
-
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay = weight_decay)
 mse_loss = nn.MSELoss().to(device)     
-
+    
 early_stopping = EarlyStopping(patience=patience, verbose=True, path="IGI-DL-weights.pth")
 
 for epoch in range(epochs):
-    epoch_start  = time.time()
     loss = train(model,train_loader,optimizer,mse_loss,device) 
+    epoch_train = time.time()
     train_loss[epoch] = loss
     val_loss[epoch], val_label, val_pred = valid(model,val_loader,mse_loss)
     
-    val_result_df = cal_gene_pearson(val_label, val_pred, predict_gene_list)
-    val_corr[epoch] = val_result_df["Correlation"].mean()
-    val_log_p[epoch] = val_result_df["Log_p_value"].mean()
-    val_mape[epoch] = val_result_df["MAPE"].mean()
+    val_result_df = cal_gene_corr(val_label, val_pred, predict_gene_list)
+    val_pear_corr[epoch] = val_result_df["Pear_corr"].mean()
+    val_pear_logp[epoch] = val_result_df["Pear_log_p"].mean()
+    val_spea_corr[epoch] = val_result_df["Spea_corr"].mean()
+    val_spea_logp[epoch] = val_result_df["Spea_log_p"].mean()
 
-    epoch_end  = time.time()
-    print("Epoch: {:03d}, Train time: {:.2f}s, Train loss: {:.5f}, Val loss: {:.5f}, Val corr: {:.5f}, Val log_p:{:.5f}, Val MAPE:{:.5f}"\
-            .format(epoch+1, epoch_end-epoch_start, train_loss[epoch], val_loss[epoch],\
-                    val_corr[epoch], val_log_p[epoch], val_mape[epoch]))
-    
+    print("Epoch: {:03d}, Train loss: {:.5f}, Val loss: {:.5f}, Val pearson corr: {:.5f}, Val pearson log_p:{:.5f}, Val spearman corr: {:.5f}, Val spearman log_p:{:.5f}"\
+            .format(epoch+1, \
+                train_loss[epoch], val_loss[epoch],\
+                val_pear_corr[epoch], val_pear_logp[epoch],\
+                val_spea_corr[epoch], val_spea_logp[epoch]))
+        
     early_stopping(val_loss[epoch], model)
     if early_stopping.early_stop:
         print("Early stopping")
         break
     if val_loss[epoch] < min_loss:
         min_loss = val_loss[epoch]
+ 

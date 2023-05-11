@@ -16,7 +16,7 @@ import matplotlib
 import matplotlib.cm as cm
 from torchvision import models
 from matplotlib import pyplot as plt
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 from torch_geometric.loader import DataLoader
 from palettable.colorbrewer.diverging import RdYlBu_10_r
 
@@ -25,7 +25,6 @@ from GNN_CNN_fusion_model import GIN4layer_ResNet18
 def test_function(model,loader):
     model.eval()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    loss = 0.  
     
     label = np.array([])
     pred = np.array([])
@@ -47,37 +46,45 @@ def test_function(model,loader):
 
     return label, pred, x_coor, y_coor
 
-def cal_gene_pearson(label_df, pred_df, predict_gene_list):
-    gene_corr_list = []
-    gene_log_p_list = []
-    gene_mape_list = []
+def cal_gene_corr(label_df, pred_df, predict_gene_list):
+    pear_corr_list = []
+    pear_log_p_list = []
+    spea_corr_list = []
+    spea_log_p_list = []
     
     for idx in range(len(predict_gene_list)):
         label_gene = label_df[:,idx]
         pred_gene = pred_df[:,idx]
         
-        gene_corr, gene_p = pearsonr(label_gene, pred_gene)
-        gene_log_p = -np.log10(gene_p+1e-10)
-        gene_mape = mape(label_gene, pred_gene)
+        pear_corr, pear_p = pearsonr(label_gene, pred_gene)
+        pear_log_p = -np.log10(pear_p+1e-10)
+        spea_corr, spea_p = spearmanr(label_gene, pred_gene)
+        spea_log_p = -np.log10(spea_p+1e-10)
         
-        gene_corr_list.append(gene_corr)
-        gene_log_p_list.append(gene_log_p)
-        gene_mape_list.append(gene_mape)
+        pear_corr_list.append(pear_corr)
+        pear_log_p_list.append(pear_log_p)
+        spea_corr_list.append(spea_corr)
+        spea_log_p_list.append(spea_log_p)
         
-    result_dict = {"Correlation" : gene_corr_list,
-       "Log_p_value" : gene_log_p_list,
-       "MAPE" : gene_mape_list}
+    result_dict = {"Pear_corr" : pear_corr_list,
+                "Pear_log_p" : pear_log_p_list,
+                "Spea_corr" : spea_corr_list,
+                "Spea_log_p" : spea_log_p_list
+                }
     result_df = pd.DataFrame(result_dict)
     result_df.index = predict_gene_list
     
     return result_df
 
-def mape(y_true, y_pred):
-    return np.mean(np.abs((y_pred - y_true) / y_true))
-
 def test_spatial_visual(test_result_df, tissue_name, test_corr, target_gene, save_path):
-    l_minima = min(list(test_result_df["label"]))
-    l_maxima = max(list(test_result_df["label"]))
+    label_sr = test_result_df["label"]
+    l_q1 = label_sr.quantile(0.25)
+    l_q3 = label_sr.quantile(0.75)
+    l_iqr = l_q3-l_q1 
+    l_fence_low  = l_q1-1.5*l_iqr
+    l_fence_high = l_q3+1.5*l_iqr
+    l_minima = max(l_fence_low, min(list(test_result_df["label"])))
+    l_maxima = min(l_fence_high, max(list(test_result_df["label"])))
     l_norm = matplotlib.colors.Normalize(vmin=l_minima, vmax=l_maxima, clip=True)
     l_mapper = cm.ScalarMappable(norm=l_norm, cmap=RdYlBu_10_r.mpl_colormap)
     
@@ -93,7 +100,6 @@ def test_spatial_visual(test_result_df, tissue_name, test_corr, target_gene, sav
     p_mapper = cm.ScalarMappable(norm=p_norm, cmap=RdYlBu_10_r.mpl_colormap)
 
     visium_root_dir = "../dataset"
-
     visium_root_path = os.path.join(visium_root_dir, tissue_name)
     hires_img_path = os.path.join(visium_root_path, "spatial/tissue_hires_image.png")
     hires_img = cv2.imread(hires_img_path,1)
@@ -148,13 +154,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Device: {}'.format(device))
 
 # Load the predicted gene names
-predict_gene_path = '../preprocessing/predict_gene_list.txt'
+predict_gene_path = '../preprocessing/SVGs_SPARKX.txt'
 with open(predict_gene_path, "r", encoding="utf-8") as f:
     predict_gene_list = f.read().splitlines()
 num_gene = len(predict_gene_list)
 
 tissue_list = ["test1", "test2"]
-graph_pt_root_path = '../preprocessed_data/graph_image_pt'
+graph_pt_root_path = '../preprocessed_data/graph_SVGs'
 graph_dict = {}
 
 for tissue_name in tissue_list:
@@ -174,7 +180,7 @@ if not os.path.exists(result_save_dir):
     os.makedirs(result_save_dir) 
 
 model_weight_path = 'IGI-DL-weights.pth'
-model = GIN4layer_ResNet18(85, num_gene, 128, [256, 256]).to(device)
+model = GIN4layer_ResNet18(85, num_gene, 256, [512, 256, 256]).to(device)
 model.load_state_dict(torch.load(model_weight_path, map_location=torch.device(device)))
 
 for tissue_name in tissue_list:
@@ -184,11 +190,13 @@ for tissue_name in tissue_list:
     
     test_label, test_pred, test_x_coor, test_y_coor = test_function(model, test_loader)
     
-    test_result_df = cal_gene_pearson(test_label, test_pred, predict_gene_list)
-    test_result_df.sort_values(by="Correlation", inplace=True, ascending=False)
+    test_result_df = cal_gene_corr(test_label, test_pred, predict_gene_list)
+    test_result_df.sort_values(by="Pear_corr", inplace=True, ascending=False)
     test_result_df.to_csv(os.path.join(result_save_dir,'Test_{}_result.csv'.format(tissue_name)), float_format='%.4f')
     
-    for target_gene in predict_gene_list:
+    visual_gene_list = list(test_result_df.index)[:2]
+    
+    for target_gene in visual_gene_list:
         fig_save_path = os.path.join(result_save_dir, target_gene)
         if not os.path.exists(fig_save_path):
             os.makedirs(fig_save_path)   

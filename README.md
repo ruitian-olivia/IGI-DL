@@ -2,11 +2,6 @@
 
 Source code for Integrated Graph and Image Deep Learning (IGI-DL).
 
-<!-- <p align="center">
-    <img src="figures/model_archi.png" width="640"> <br />
-    <em> The schematics of the designed IGI-DL model</em>
-</p> -->
-
 
 ### Data structure
 
@@ -80,11 +75,6 @@ preprocessed_data
 
 ### Data preprocessing
 Code in **./preprocessing**
-
-<!-- <p align="center">
-    <img src="figures/preprocessing_flowchart.png" width="640"> <br />
-    <em> The flowchart of data preprocessing</em>
-</p> -->
 
 ##### 1. Image preprocessing
 ###### 1.1 HE patches extraction
@@ -244,7 +234,7 @@ Code in **./model_prediction**
 Model weights are saved as **./IGI-DL-weights.pth**
 ```bash
 cd model_prediction
-python IGI_training_main.py False 2e-4 1e-4 128 0.4 100 10 --mlp_hidden 256 256
+python IGI_training_main.py 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
 ```
 
 ##### Predicting new samples

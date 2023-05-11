@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib
 import matplotlib.cm as cm
 from matplotlib import pyplot as plt
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 from palettable.colorbrewer.diverging import RdYlBu_10_r
 
 def setup_seed(seed):
@@ -84,38 +84,69 @@ def test(model,loader,mse_loss):
 
     return loss / len(loader.dataset), label, pred, x_coor, y_coor
 
-def cal_gene_pearson(label_df, pred_df, predict_gene_list):
-    gene_corr_list = []
-    gene_log_p_list = []
-    gene_r2_list = []
-    gene_mape_list = []
+def predict(model,loader):
+    model.eval()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    label = np.array([])
+    pred = np.array([])
+    x_coor = np.array([])
+    y_coor = np.array([])
+    for data in loader:
+        data = data.to(device)
+        output = model(data)
+        
+        _tmp_label = data.y.cpu().detach().numpy()
+        _tmp_pred = output.cpu().detach().numpy()
+        _tmp_x_coor = data.x_coor.cpu().detach().numpy()
+        _tmp_y_coor = data.y_coor.cpu().detach().numpy()
+
+        label = np.vstack([label,_tmp_label]) if label.size else _tmp_label
+        pred = np.vstack([pred,_tmp_pred]) if pred.size else _tmp_pred
+        x_coor = np.hstack([x_coor,_tmp_x_coor]) if x_coor.size else _tmp_x_coor
+        y_coor = np.hstack([y_coor,_tmp_y_coor]) if y_coor.size else _tmp_y_coor
+
+    return label, pred, x_coor, y_coor
+
+def cal_gene_corr(label_df, pred_df, predict_gene_list):
+    pear_corr_list = []
+    pear_log_p_list = []
+    spea_corr_list = []
+    spea_log_p_list = []
     
     for idx in range(len(predict_gene_list)):
         label_gene = label_df[:,idx]
         pred_gene = pred_df[:,idx]
         
-        gene_corr, gene_p = pearsonr(label_gene, pred_gene)
-        gene_log_p = -np.log10(gene_p+1e-10)
-        gene_mape = mape(label_gene, pred_gene)
+        pear_corr, pear_p = pearsonr(label_gene, pred_gene)
+        pear_log_p = -np.log10(pear_p+1e-10)
+        spea_corr, spea_p = spearmanr(label_gene, pred_gene)
+        spea_log_p = -np.log10(spea_p+1e-10)
         
-        gene_corr_list.append(gene_corr)
-        gene_log_p_list.append(gene_log_p)
-        gene_mape_list.append(gene_mape)
+        pear_corr_list.append(pear_corr)
+        pear_log_p_list.append(pear_log_p)
+        spea_corr_list.append(spea_corr)
+        spea_log_p_list.append(spea_log_p)
         
-    result_dict = {"Correlation" : gene_corr_list,
-       "Log_p_value" : gene_log_p_list,
-       "MAPE" : gene_mape_list}
+    result_dict = {"Pear_corr" : pear_corr_list,
+                "Pear_log_p" : pear_log_p_list,
+                "Spea_corr" : spea_corr_list,
+                "Spea_log_p" : spea_log_p_list
+                }
     result_df = pd.DataFrame(result_dict)
     result_df.index = predict_gene_list
     
     return result_df
 
-def mape(y_true, y_pred):
-    return np.mean(np.abs((y_pred - y_true) / y_true))
-
 def test_spatial_visual(test_result_df, tissue_name, test_corr, target_gene, save_path):
-    l_minima = min(list(test_result_df["label"]))
-    l_maxima = max(list(test_result_df["label"]))
+    label_sr = test_result_df["label"]
+    l_q1 = label_sr.quantile(0.25)
+    l_q3 = label_sr.quantile(0.75)
+    l_iqr = l_q3-l_q1 
+    l_fence_low  = l_q1-1.5*l_iqr
+    l_fence_high = l_q3+1.5*l_iqr
+    l_minima = max(l_fence_low, min(list(test_result_df["label"])))
+    l_maxima = min(l_fence_high, max(list(test_result_df["label"])))
     l_norm = matplotlib.colors.Normalize(vmin=l_minima, vmax=l_maxima, clip=True)
     l_mapper = cm.ScalarMappable(norm=l_norm, cmap=RdYlBu_10_r.mpl_colormap)
     
@@ -130,7 +161,7 @@ def test_spatial_visual(test_result_df, tissue_name, test_corr, target_gene, sav
     p_norm = matplotlib.colors.Normalize(vmin=p_minima, vmax=p_maxima, clip=True)
     p_mapper = cm.ScalarMappable(norm=p_norm, cmap=RdYlBu_10_r.mpl_colormap)
 
-    visium_root_dir = "../dataset"
+    visium_root_dir = "../../dataset"
     visium_root_path = os.path.join(visium_root_dir, tissue_name)
     hires_img_path = os.path.join(visium_root_path, "spatial/tissue_hires_image.png")
     hires_img = cv2.imread(hires_img_path,1)
