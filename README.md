@@ -1,5 +1,5 @@
 ## ST_IGI package
-A python package called "ST_IGI", which is an integrated graph and image deep learning (IGI-DL) model for gene spatial expression prediction based on HE slides of cancer.
+A python package called "ST_IGI", which is an integrated graph and image deep learning model for gene spatial expression prediction based on HE slides of cancer.
 
 ### Install ST_IGI package
 ```bash
@@ -28,9 +28,7 @@ Demo data can be downloaded on the [Zenodo](https://zenodo.org/record/7937635#.Z
 ### Demo example
 The usage example of this Python package is shown in the **ST_IGI_demo.ipynb**. When calling some functions of ST_IGI, it will automatically download the model weights and demo data. If it fails to download due to network reasons, you can download the relevant files yourself by referring to the contents of the two sections above, **Model weights** and **Demo data**.
 
-## IGI-DL Training
-
-Source code for Integrated Graph and Image Deep Learning (IGI-DL).
+## Source code
 
 ### Data structure
 
