@@ -1,11 +1,19 @@
-## IGI-DL
+## ST_IGI package
+A python package called "ST_IGI", which is an integrated graph and image deep learning (IGI-DL) model for gene spatial expression prediction based on HE slides of cancer.
+
+### Model weights
+The model weights trained on three cancer types, cutaneous squamous cell carcinoma (cSCC), breast cancer,  and colorectal cancer (CRC), are saved in **./model_weights**.
+
+### Demo data
+Demo data can be downloaded on the [Zenodo](https://zenodo.org/record/7937635#.ZGMOF-xBy3J), including a cSCC sample sequenced by 10X Visium and a breast cancer sample sequenced by ST.
+
+## IGI-DL Training
 
 Source code for Integrated Graph and Image Deep Learning (IGI-DL).
 
-
 ### Data structure
 
-10X Visium spatial transcriptomics data with high-resolution HE-stained histological images are saved in **./dataset**
+10X Visium spatial transcriptomics data with high-resolution HE-stained histological images are saved in **./dataset**.
 
 ```bash
 dataset
