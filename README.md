@@ -1,11 +1,32 @@
 ## ST_IGI package
 A python package called "ST_IGI", which is an integrated graph and image deep learning (IGI-DL) model for gene spatial expression prediction based on HE slides of cancer.
 
+### Install ST_IGI package
+```bash
+install ST_IGI-0.1.0.tar.gz
+```
+### System requirement
+Major dependencies are:
+- python 3.9
+- torch 1.11.0+cu102
+- torchvision 0.12.0+cu102
+- torch-cluster 1.6.0
+- torch-scatter 2.0.9
+- torch-sparse 0.6.15
+- torch-geometric 2.1.0.post1
+- opencv-python
+- matplotlib
+- pandas
+- palettable
+
 ### Model weights
 The model weights trained on three cancer types, cutaneous squamous cell carcinoma (cSCC), breast cancer,  and colorectal cancer (CRC), are saved in **./model_weights**.
 
 ### Demo data
-Demo data can be downloaded on the [Zenodo](https://zenodo.org/record/7937635#.ZGMOF-xBy3J), including a cSCC sample sequenced by 10X Visium and a breast cancer sample sequenced by ST.
+Demo data can be downloaded on the [Zenodo](https://zenodo.org/record/7937635#.ZGMOF-xBy3J), including a cSCC sample sequenced by 10X Visium and a breast cancer sample sequenced by ST. Downloaded demo data can be saved in **./download_data**.
+
+### Demo example
+The usage example of this Python package is shown in the **ST_IGI_demo.ipynb**. When calling some functions of ST_IGI, it will automatically download the model weights and demo data. If it fails to download due to network reasons, you can download the relevant files yourself by referring to the contents of the two sections above, **Model weights** and **Demo data**.
 
 ## IGI-DL Training
 
