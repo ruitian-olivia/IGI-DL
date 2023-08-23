@@ -353,7 +353,7 @@ python BRCA_supernode_graph.py
 python COAD_supernode_graph.py
 python READ_supernode_graph.py
 ```
-Constructed super-patch graphs are saved in **.'.patch_graph_construction/preprocessed_WSI/supernode_graph/'**
+Constructed super-patch graphs are saved in **.'./patch_graph_construction/preprocessed_WSI/supernode_graph/'**
 
 #### Graph-based survival model training and validation
 Code in **./survival_model_training**
