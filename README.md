@@ -363,10 +363,7 @@ Download demo csv file: [Click](super-patch_graph_construction/preprocessed_WSI/
 
 ```bash
 cd super-survival_model_training/
-
 python BRCA_surv_cli_main.py --model_name "BRCA_GAT_surv_cli_FF" --num_epochs 1000  --learning_rate 5e-4 --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1
-
-
 python CRC_surv_cli_main.py --model_name "CRC_GAT_surv_cli_FF" --num_epochs 600  --learning_rate 5e-4 --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1 --random_seed 2
 ```
 
