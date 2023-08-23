@@ -101,6 +101,11 @@ preprocessed_data
 ```
 
 ### Data preprocessing
+<p align="center">
+    <img src="fig/preprocessing_flowchart.png" width="660"> <br />
+    <em>Data preprocessing workflow</em>
+</p>
+
 Code in **./preprocessing**
 
 ##### 1. Image preprocessing
@@ -192,7 +197,12 @@ python graph_construct.py
 
 Constructed Nuclei-Graphs for patches in each tissue sample are saved in **./preprocessed_data/graph_SVGs**.
 
-### Model training
+### IGI-DL and comparision models training
+<p align="center">
+    <img src="fig/model_archi.png" width="660"> <br />
+    <em> The architecture of our designed IGI-DL model</em>
+</p>
+
 Code in **./model_training**
 
 ##### Image-based models
@@ -269,7 +279,98 @@ python IGI_training_main.py 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
 cd model_prediction
 python IGI_test_main.py
 ```
+### Graph-based survival model
+<p align="center">
+    <img src="fig/super_survival.png" width="660"> <br />
+    <em> The architecture of our graph-based survival model </em>
+</p>
 
+#### Super-patch graph construction for HE-stained WSI
+##### 1. WSI preprocessing
+Code in **./super-patch_graph_construction/preprocessing_WSI**
+The names and paths of svs format WSI files are stored in a CSV file within a subfolder svs_path of folder preprocessing_WSI.
+
+Download demo csv file: [Click](super-patch_graph_construction/preprocessing_WSI/svs_path/TCGA_BRCA_svs_path_demo.csv)
+
+###### 1.1 Split patches from the WSI
+Divide the WSI into patches of 200 $\times$ 200 pixels, corresponding to an actual distance of 100 $\mu m$.
+```bash
+cd super-patch_graph_construction/preprocessing_WSI
+# WSI in TCGA-BRCA
+python extract_100microns_BRCA.py
+# WSI in TCGA-COAD
+python extract_100microns_COAD.py
+# WSI in TCGA-READ
+python extract_100microns_READ.py
+```
+Splited patches are saved in **./super-patch_graph_construction/preprocessed_WSI/HE_patches**
+
+###### 1.2 HE patches color normalization
+We use [a wsi-tile-cleanup tool](https://github.com/lucasrla/wsi-tile-cleanup) to filter out regions in the WSI with colored marker annotations.
+```bash
+cd super-patch_graph_construction/preprocessing_WSI
+python norm_100microns_BRCA.py
+python norm_100microns_COAD.py
+python norm_100microns_READ.py
+```
+
+Normalized patches are saved in **./super-patch_graph_construction/preprocessed_WSI/HE_nmzd**
+
+###### 1.3 Nuclei-Graphs construction
+The processes of Nuclei segmentation & Nuclei features extraction & Nuclei features standardization & Nuclei-Graphs construction are all same with that in **./preprocessing**.
+Constructed Nuclei-Graphs are saved in **./super-patch_graph_construction/preprocessed_WSI/graph_image**
+
+
+##### 2. Patch features extraction
+Code in **./super-patch_graph_construction/extract_patch_features**
+
+we used IGI-DL to predict the expression of genes that were validated to have a Pearson correlation greater than or equal to 0.25. These predicted gene expressions were used as features for the corresponding patches. 
+
+```bash
+cd super-patch_graph_construction/extract_patches_features
+# The TCGA-BRCA dataset is large and is processed in six subsets.
+python BRCA_IGI_DL_features_set.py --set_id 0
+python BRCA_IGI_DL_features_set.py --set_id 1
+python BRCA_IGI_DL_features_set.py --set_id 2
+python BRCA_IGI_DL_features_set.py --set_id 3
+python BRCA_IGI_DL_features_set.py --set_id 4
+python BRCA_IGI_DL_features_set.py --set_id 5
+# The TCGA-COAD dataset
+python COAD_IGI_DL_features.py
+# The TCGA-READ dataset
+python READ_IGI_DL_features.py
+```
+Extracted spatial gene expression features are saved in subfolders of **./super-patch_graph_construction/extract_patch_features**: **IGI_DL_BRCA**, **IGI_DL_COAD**, **IGI_DL_READ**.
+
+##### 3. Super-patch graph construction
+Code in **./super-patch_graph_construction/extract_patch_features**
+
+Taking into account the overall spatial structure of the WSI and aiming to minimize the redundancy of input information, we adopted the approach proposed by Lee et al.<sup>[4]</sup> in the [TEA-graph](https://github.com/taliq/TEA-graph) method, which merges patches based on feature similarity and constructs WSI-level super-patch graphs.
+
+```bash
+cd super-patch_graph_construction/
+python BRCA_supernode_graph.py
+python COAD_supernode_graph.py
+python READ_supernode_graph.py
+```
+Constructed super-patch graphs are saved in **.'.patch_graph_construction/preprocessed_WSI/supernode_graph/'**
+
+#### Graph-based survival model training and validation
+Code in **./survival_model_training**
+
+The survival information, clinical data, and corresponding WSI names of TCGA patients are saved in CSV files.
+Download demo csv file: [Click](super-patch_graph_construction/preprocessed_WSI/surv_csv/BRCA_surv_demo.csv)
+
+```bash
+cd super-survival_model_training/
+
+python BRCA_surv_cli_main.py --model_name "BRCA_GAT_surv_cli_FF" --num_epochs 1000  --learning_rate 5e-4 --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1
+
+
+python CRC_surv_cli_main.py --model_name "CRC_GAT_surv_cli_FF" --num_epochs 600  --learning_rate 5e-4 --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1 --random_seed 2
+```
+
+The results of the five-fold cross-validation and trained survival model weights are saved in **model_result** and **model_weights**.
 
 ### Reference
 
@@ -278,3 +379,7 @@ python IGI_test_main.py
 [2] Gamper J, Alemi Koohbanani N, Benet K, et al. Pannuke: an open pan-cancer histology dataset for nuclei instance segmentation and classification[C]//European congress on digital pathology. Springer, Cham, 2019: 11-19.
 
 [3] Zhu J, Sun S, Zhou X. SPARK-X: non-parametric modeling enables scalable and robust detection of spatial expression patterns for large spatial transcriptomic studies[J]. Genome Biology, 2021, 22(1): 1-25.
+
+[4] Lee Y, Park JH, Oh S, Shin K, Sun J, Jung M, et al. Derivation of prognostic contextual histopathological
+features from whole-slide images of tumours via graph deep learning[J]. Nature Biomedical Engineering,
+2022: 1-15.
