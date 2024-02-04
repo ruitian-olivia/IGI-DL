@@ -17,7 +17,7 @@ print("len(BRCA_svs_files):", len(BRCA_svs_files))
 
 def extract_100microns(image):
     microns_length = 100
-    save_dir = './preprocessed_WSI/HE_patches/BRCA'
+    save_dir = './preprocessed_TCGA/HE_patches/BRCA'
     
     print(image)
     sample = image.split('/')[-1].split('.')[0]

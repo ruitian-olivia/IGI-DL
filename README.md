@@ -3,7 +3,7 @@ A python package called "ST_IGI", which is an integrated graph and image deep le
 
 ### Install ST_IGI package
 ```bash
-install ST_IGI-0.1.0.tar.gz
+install ST_IGI-0.2.0.tar.gz
 ```
 ### System requirement
 Major dependencies are:
@@ -225,7 +225,7 @@ python graph_construct.py
 
 Constructed Nuclei-Graphs for patches in each tissue sample are saved in **./preprocessed_data/filtered_graph_SVGs**.
 
-### IGI-DL and comparision models training
+### IGI-DL and comparison models training
 <p align="center">
     <img src="fig/model_archi.png" width="660"> <br />
     <em> The architecture of our designed IGI-DL model</em>
@@ -310,6 +310,7 @@ Model weights are saved as **./IGI-DL-weights.pth**
 cd model_prediction
 python IGI_training_main.py 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
 ```
+The first argument (2e-4) represents the learning rate, the second argument (1e-4) represents the weight decay, the third argument (256) represents the dimension of the GIN hidden layer, the fourth argument (300) represents the number of epochs, the fifth argument (30) represents the number of patience, and the last argument (--mlp_hidden 512 256 256) represents the dimension of MLP hidden layers.
 
 ##### Predicting new samples
 ```bash
@@ -327,10 +328,14 @@ python IGI_test_main.py
 Code in **./super-patch_graph_construction/preprocessing_WSI**
 The names and paths of svs format WSI files are stored in a CSV file within a subfolder svs_path of folder preprocessing_WSI.
 
+Training and five-fold cross-validation set: [TCGA](https://portal.gdc.cancer.gov/)
+
+External test set: [MCO-CRC](https://www.sredhconsortium.org/sredh-datasets/mco-study-whole-slide-image-dataset)<sup>[4]</sup>
+
 Download demo csv file: [Click](super-patch_graph_construction/preprocessing_WSI/svs_path/TCGA_BRCA_svs_path_demo.csv)
 
 ###### 1.1 Split patches from the WSI
-Divide the WSI into patches of 200 $\times$ 200 pixels, corresponding to an actual distance of 100 $\mu m$.
+Divide the WSI into patches of 200 $\times$ 200 pixels, corresponding to an actual distance of 100 $\mu m$ (resolution: 0.5 $\mu m$/pixel).
 ```bash
 cd super-patch_graph_construction/preprocessing_WSI
 # WSI in TCGA-BRCA
@@ -339,8 +344,12 @@ python extract_100microns_BRCA.py
 python extract_100microns_COAD.py
 # WSI in TCGA-READ
 python extract_100microns_READ.py
+# WSI in MCO-CRC
+python extract_100microns_MCO.py
 ```
-Splited patches are saved in **./super-patch_graph_construction/preprocessed_WSI/HE_patches**
+Splited TCGA patches are saved in **./super-patch_graph_construction/preprocessed_TCGA/HE_patches**
+Splited MCO patches are saved in **./super-patch_graph_construction/preprocessed_MCO/HE_patches**
+
 
 ###### 1.2 HE patches color normalization
 We use [a wsi-tile-cleanup tool](https://github.com/lucasrla/wsi-tile-cleanup) to filter out regions in the WSI with colored marker annotations.
@@ -349,14 +358,18 @@ cd super-patch_graph_construction/preprocessing_WSI
 python norm_100microns_BRCA.py
 python norm_100microns_COAD.py
 python norm_100microns_READ.py
+python norm_100microns_MCO.py
 ```
 
-Normalized patches are saved in **./super-patch_graph_construction/preprocessed_WSI/HE_nmzd**
+Normalized TCGA patches are saved in **./super-patch_graph_construction/preprocessed_TCGA/HE_nmzd**
+Normalized MCO patches are saved in **./super-patch_graph_construction/preprocessed_MCO/HE_nmzd**
 
 ###### 1.3 Nuclei-Graphs construction
-The processes of Nuclei segmentation & Nuclei features extraction & Nuclei features standardization & Nuclei-Graphs construction are all same with that in **./preprocessing**.
-Constructed Nuclei-Graphs are saved in **./super-patch_graph_construction/preprocessed_WSI/graph_image**
+The processes of Nuclei segmentation & Nuclei features extraction & Edge nuclei filtering & Nuclei features standardization & Nuclei-Graphs construction are all same with that in **./preprocessing**.
 
+Constructed TCGA Nuclei-Graphs are saved in **./super-patch_graph_construction/preprocessed_TCGA/graph_image**
+
+Constructed MCO Nuclei-Graphs are saved in **./super-patch_graph_construction/preprocessed_MCO/graph_image**
 
 ##### 2. Patch features extraction
 Code in **./super-patch_graph_construction/extract_patch_features**
@@ -376,35 +389,69 @@ python BRCA_IGI_DL_features_set.py --set_id 5
 python COAD_IGI_DL_features.py
 # The TCGA-READ dataset
 python READ_IGI_DL_features.py
+# The MCO-CRC dataset is large and is processed in eight subsets.
+python MCO_IGI_DL_features_set.py --set_id 0
+python MCO_IGI_DL_features_set.py --set_id 1
+python MCO_IGI_DL_features_set.py --set_id 2
+python MCO_IGI_DL_features_set.py --set_id 3
+python MCO_IGI_DL_features_set.py --set_id 4
+python MCO_IGI_DL_features_set.py --set_id 5
+python MCO_IGI_DL_features_set.py --set_id 6
+python MCO_IGI_DL_features_set.py --set_id 7
 ```
-Extracted spatial gene expression features are saved in subfolders of **./super-patch_graph_construction/extract_patch_features**: **IGI_DL_BRCA**, **IGI_DL_COAD**, **IGI_DL_READ**.
+Extracted spatial gene expression features are saved in subfolders of **./super-patch_graph_construction/extract_patch_features**: **IGI_DL_BRCA**, **IGI_DL_COAD**, **IGI_DL_READ**, and **IGI_DL_MCO**.
+
 
 ##### 3. Super-patch graph construction
 Code in **./super-patch_graph_construction/extract_patch_features**
 
-Taking into account the overall spatial structure of the WSI and aiming to minimize the redundancy of input information, we adopted the approach proposed by Lee et al.<sup>[4]</sup> in the [TEA-graph](https://github.com/taliq/TEA-graph) method, which merges patches based on feature similarity and constructs WSI-level super-patch graphs.
+Taking into account the overall spatial structure of the WSI and aiming to minimize the redundancy of input information, we adopted the approach proposed by Lee et al.<sup>[5]</sup> in the [TEA-graph](https://github.com/taliq/TEA-graph) method, which merges patches based on feature similarity and constructs WSI-level super-patch graphs.
 
 ```bash
 cd super-patch_graph_construction/
 python BRCA_supernode_graph.py
 python COAD_supernode_graph.py
 python READ_supernode_graph.py
+python MCO_supernode_graph.py
 ```
-Constructed super-patch graphs are saved in **.'./patch_graph_construction/preprocessed_WSI/supernode_graph/'**
+Constructed TCGA super-patch graphs are saved in **.'./patch_graph_construction/preprocessed_TCGA/supernode_graph/'**
 
-#### Graph-based survival model training and validation
+Constructed MCO super-patch graphs are saved in **.'./patch_graph_construction/preprocessed_MCO/supernode_graph/'**
+
+#### Graph-based survival model training and five-fold cross-validation in TCGA datasets
 Code in **./survival_model_training**
 
 The survival information, clinical data, and corresponding WSI names of TCGA patients are saved in CSV files.
-Download demo csv file: [Click](super-patch_graph_construction/preprocessed_WSI/surv_csv/BRCA_surv_demo.csv)
+Download demo csv file: [Click](super-patch_graph_construction/preprocessed_TCGA/surv_csv/BRCA_surv_demo.csv)
 
 ```bash
 cd super-survival_model_training/
-python BRCA_surv_cli_main.py --model_name "BRCA_GAT_surv_cli_FF" --num_epochs 1000  --learning_rate 5e-4 --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1
-python CRC_surv_cli_main.py --model_name "CRC_GAT_surv_cli_FF" --num_epochs 600  --learning_rate 5e-4 --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1 --random_seed 2
+python BRCA_surv_cli_LOOV_main.py --model_name "BRCA_GAT_surv_cli_LOOV" --num_epochs 1000  --learning_rate 5e-4 --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1
+python CRC_surv_cli_LOOV_main.py --model_name "CRC_GAT_surv_cli_LOOV" --num_epochs 600  --learning_rate 5e-4 --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1
 ```
+The first argument (--model_name "BRCA_GAT_surv_cli_LOOV") represents the name of the trained survival model, the second argument (--num_epochs 1000) represents the number of epochs, the third argument (--learning_rate 5e-4) represents the learning rate, the fourth argument (--dropedge_rate) represent the dropedge rate for GAT, the fifth argument (--graph_dropout_rate) represents Node/Edge feature dropout rate, and the sixth argument (--dropout_rate) represents the dropout rate for MLP.
 
 The results of the five-fold cross-validation and trained survival model weights are saved in **model_result** and **model_weights**.
+
+#### Graph-based survival model external test in MCO-CRC datasets
+Code in **./survival_model_prediction**
+
+```bash
+cd super-survival_model_prediction/
+python CRC_surv_cli_ALL_main.py --model_name "CRC_GAT_surv_cli_ALL" --num_epochs 600  --learning_rate 5e-4 --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1
+```
+The first argument (--model_name "CRC_GAT_surv_cli_ALL") represents the name of the trained survival model, the second argument (--num_epochs 1000) represents the number of epochs, the third argument (--learning_rate 5e-4) represents the learning rate, the fourth argument (--dropedge_rate) represent the dropedge rate for GAT, the fifth argument (--graph_dropout_rate) represents Node/Edge feature dropout rate, and the sixth argument (--dropout_rate) represents the dropout rate for MLP.
+
+The weight file of the survival model trained on all TCGA-CRC patients was saved as **model_weights/CRC_GAT_surv_cli_ALL/ALL_model.pth** 
+
+The trained survival model was then test on external test set MCO-CRC.
+
+```bash
+cd super-survival_model_prediction/
+python python MCO_surv_cli_external_test_main.py --model_name "MCO_external_test"  --model_weights_name "CRC_GAT_surv_cli_ALL_v1" --dropedge_rate 0.1 --graph_dropout_rate 0.1 --dropout_rate 0.1
+```
+
+The results of the external test are saved in **model_result**
 
 ### Reference
 
@@ -414,6 +461,8 @@ The results of the five-fold cross-validation and trained survival model weights
 
 [3] Zhu J, Sun S, Zhou X. SPARK-X: non-parametric modeling enables scalable and robust detection of spatial expression patterns for large spatial transcriptomic studies[J]. Genome Biology, 2021, 22(1): 1-25.
 
-[4] Lee Y, Park JH, Oh S, Shin K, Sun J, Jung M, et al. Derivation of prognostic contextual histopathological
+[4] Jonnagaddala J, Croucher JL, Jue TR, Meagher NS, Caruso L, Ward R, Hawkins NJ. Integration and Analysis of Heterogeneous Colorectal Cancer Data for Translational Research. Stud Health Technol Inform. 2016;225:387-91. 
+
+[5] Lee Y, Park JH, Oh S, Shin K, Sun J, Jung M, et al. Derivation of prognostic contextual histopathological
 features from whole-slide images of tumours via graph deep learning[J]. Nature Biomedical Engineering,
 2022: 1-15.

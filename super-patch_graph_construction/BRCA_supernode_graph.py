@@ -13,7 +13,7 @@ from torch_geometric.data import Data
 from sklearn.metrics import pairwise_distances
 from torch_geometric.transforms import Polar
 
-superpatch_dir = './preprocessed_WSI/supernode_graph/BRCA'
+superpatch_dir = './preprocessed_TCGA/supernode_graph/BRCA'
 features_dir = './extract_patch_features/IGI_DL_BRCA'
 
 predict_gene_path = '../model_weights/breast_cancer/breast_gene_list.txt'

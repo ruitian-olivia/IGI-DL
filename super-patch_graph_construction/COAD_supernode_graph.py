@@ -13,7 +13,7 @@ from torch_geometric.data import Data
 from sklearn.metrics import pairwise_distances
 from torch_geometric.transforms import Polar
 
-superpatch_dir = './preprocessed_WSI/supernode_graph/COAD'
+superpatch_dir = './preprocessed_TCGA/supernode_graph/COAD'
 features_dir = './extract_patch_features/IGI_DL_COAD'
 
 predict_gene_path = '../model_weights/CRC/CRC_gene_list.txt'

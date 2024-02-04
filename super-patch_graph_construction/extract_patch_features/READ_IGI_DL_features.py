@@ -66,7 +66,7 @@ with open(predict_gene_path, "r", encoding="utf-8") as f:
 num_gene = len(predict_gene_list)
 
 model_weight_path = '../../model_weights/CRC/IGI-DL-CRC-weights.pth'
-model = GIN4layer_ResNet18_visual(85, num_gene, 256, [512, 256, 256]).to(device)
+model = GIN4layer_ResNet18_visual(55, num_gene, 256, [512, 256, 256]).to(device)
 model.load_state_dict(torch.load(model_weight_path, map_location=torch.device(device)))
 
 model_name = 'IGI_DL_READ'

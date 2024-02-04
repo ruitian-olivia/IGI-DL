@@ -11,12 +11,12 @@ import pandas as pd
 
 import wsi_tile_cleanup as cleanup
 
-source_root_path = './preprocessed_WSI/HE_patches/READ'
+source_root_path = './preprocessed_TCGA/HE_patches/READ'
 patient_list = os.listdir(source_root_path)
 
 def norm_100microns(tissue_name):
-    source_root_path = './preprocessed_WSI/HE_patches/READ'
-    norm_root_path = './preprocessed_WSI/HE_nmzd/READ'
+    source_root_path = './preprocessed_TCGA/HE_patches/READ'
+    norm_root_path = './preprocessed_TCGA/HE_nmzd/READ'
 
     rescale_size = 200
     # Load reference image for normalization
