@@ -13,7 +13,7 @@ def text_save(content,filename,mode='w'):
         file.write(str(content[i])+'\n')
     file.close()
 
-sample_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
+sample_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6', 'sample7', 'sample8', 'sample9', 'sample10']
 
 SVGs_Y_list = None
 for sample_name in sample_list:

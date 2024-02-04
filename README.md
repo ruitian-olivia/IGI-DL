@@ -87,7 +87,11 @@ preprocessed_data
 │  └───sample1
 │    │  ...
 │
-└───nuclei_standar_features
+└───filtered_nuclei_seg_features
+│  └───sample1
+│    │  ...
+│
+└───filtered_nuclei_standar_features
 │  └───sample1
 │    │  ...
 │
@@ -95,7 +99,7 @@ preprocessed_data
 │  └───sample1
 │    │  ...
 │
-└───graph_image_pt
+└───filtered_graph_SVGs
 │  └───sample1
 │    │  ...
 ```
@@ -129,6 +133,7 @@ Normalized HE patches are saved in **./preprocessed_data/HE_nmzd**.
 Using Hover-Nety<sup>[1]</sup> pretrained on PanNuke Datasety<sup>[2]</sup> to segment nucleus in the HE patches, where the model weight file is saved in **./Hover-Net/hovernet-inference-weights** as pannuke.npz.
 
 ```bash
+cd preprocessing
 mkdir Hover-Net
 cd Hover-Net
 git clone https://github.com/simongraham/hovernet_inference.git
@@ -153,14 +158,38 @@ cd preprocessing
 python nuclei_features_extract.py
 ```
 
-###### 1.5 Nuclei features standardization
+###### 1.5 Edge nuclei filtering
+
+```bash
+cd preprocessing
+python nuclei_edge_filter.py
+```
+
+###### 1.6 Nuclei features standardization
 
 ```bash
 cd preprocessing
 python nuclei_features_standardization.py
 ```
 
-Standardized nuclei features for each patch are saves in **./preprocessed_data/nuclei_standar_features**.
+Standardized nuclei features for each patch are saves in **./preprocessed_data/filtered_nuclei_standar_features**.
+
+###### 1.7 Nuclei features selection
+
+Nuclei features selection was conducted employing a correlation filter based on the absolute values of pairwise Spearman's correlation coefficient ($\rho$) to mitigate feature redundancy and prevent model overfitting (aimed at reducing feature dimensionality and addressing the overfitting issue). The threshold for $\rho$ was set at 0.9. If two features exhibited a $\rho$ > 0.9, the approach assessed the mean absolute correlation of each variable, and the variable with the highest mean absolute correlation was excluded.
+
+```bash
+cd preprocessing/nuclei_features_selection
+python nuclei_features_corr_selection.py
+```
+Removed nuclei features for each cancer type are saves in **./preprocessing/nuclei_features_selection**. 
+The union of removed features from CRC, breast cancer and cSCC was computed for the subsequent construction of the Nuclei-graph.
+
+```bash
+cd preprocessing/nuclei_features_selection
+python nuclei_common_selected_features.py
+```
+The union list was saves as  **./preprocessing/nuclei_features_selection/removed_feature_union.txt**
 
 ##### 2. Gene expression preprocessing
 ###### 2.1 Find SVGs using SPARKX<sup>[3]</sup>
@@ -187,7 +216,6 @@ python gene_count_tranform.py
 ```
 Transformed count data for each tissue sample are saved in **./preprocessed_data/SVGs_label**.
 
-
 ##### 3. Nuclei-Graphs construction
 
 ```bash
@@ -195,7 +223,7 @@ cd preprocessing
 python graph_construct.py
 ```
 
-Constructed Nuclei-Graphs for patches in each tissue sample are saved in **./preprocessed_data/graph_SVGs**.
+Constructed Nuclei-Graphs for patches in each tissue sample are saved in **./preprocessed_data/filtered_graph_SVGs**.
 
 ### IGI-DL and comparision models training
 <p align="center">

@@ -11,10 +11,10 @@ from scipy.sparse import csr_matrix
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.impute import SimpleImputer
 
-feature_root_path = '../preprocessed_data/nuclei_seg_features'
-norm_root_path = '../preprocessed_data/nuclei_standar_features'
+feature_root_path = '../preprocessed_data/filtered_nuclei_seg_features'
+norm_root_path = '../preprocessed_data/filtered_nuclei_standar_features'
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5']
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6', 'sample7', 'sample8', 'sample9', 'sample10']
 
 for tissue_name in tissue_list:
     feature_path = os.path.join(feature_root_path,tissue_name)

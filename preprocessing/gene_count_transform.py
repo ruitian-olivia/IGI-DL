@@ -15,7 +15,7 @@ with open(predict_gene_path, "r", encoding="utf-8") as f:
 data_root_dir = "../dataset"
 save_root_path = '../preprocessed_data/SVGs_label'
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6', 'sample7', 'sample8', 'sample9', 'sample10']
 
 for tissue_name in tissue_list:
     root_path = os.path.join(data_root_dir, tissue_name)

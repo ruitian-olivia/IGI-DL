@@ -21,16 +21,20 @@ patch_transform = transforms.Compose([
 # critical distance 20 \mu m, pix width 0.5 \mu m
 critical = 20/0.5
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6', 'sample7', 'sample8', 'sample9', 'sample10']
         
 visium_root_dir = '../dataset'
 patch_root_path = "../preprocessed_data/HE_nmzd"
-feature_root_path = '../preprocessed_data/nuclei_standar_features'
+feature_root_path = '../preprocessed_data/filtered_nuclei_standar_features'
 
 label_root_path = '../preprocessed_data/SVGs_label'
-graph_img_root_path = '../preprocessed_data/graph_SVGs'
+graph_img_root_path = '../preprocessed_data/filtered_graph_SVGs'
 
-# for tissue_name in tissue_list:
+removed_list_path = './nuclei_features_selection/removed_feature_union.txt'
+with open(removed_list_path, 'r') as file:
+    removed_feature_list = [line.strip() for line in file]
+print("len(removed_feature_list):", len(removed_feature_list))
+
 def graph_construct(tissue_name):
     print(tissue_name)
     visium_path = os.path.join(visium_root_dir,tissue_name)
@@ -97,7 +101,7 @@ def graph_construct(tissue_name):
             edge_index_tensor = torch.tensor(edge_index_np, dtype=torch.long)
             edge_attr_tensor = torch.tensor(edge_attr_np, dtype=torch.float)
 
-            feature_np = np.array(node_feature_df.drop(['Label','Identifier.CentroidX', 'Identifier.CentroidY'],axis=1))
+            feature_np = np.array(node_feature_df.drop(['Label','Identifier.CentroidX','Identifier.CentroidY']+removed_feature_list,axis=1))
             feature_tensor = torch.tensor(feature_np, dtype=torch.float)
             
             if torch.isinf(feature_tensor).any():

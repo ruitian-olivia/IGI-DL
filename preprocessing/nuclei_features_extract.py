@@ -65,7 +65,7 @@ def extract_seg_features(img_file_path, mask_dir_path, feature_path, barcode):
                               'Identifier.WeightedCentroidX','Identifier.WeightedCentroidY'],axis=1)
         merge_df.to_csv(os.path.join(feature_path, str(barcode)+'.csv'), header=True, index=False)
     
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5']
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6', 'sample7', 'sample8', 'sample9', 'sample10']
 
 mask_root_path = '../preprocessed_data/hover_seg'
 img_root_path = '../preprocessed_data/HE_nmzd'

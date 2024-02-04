@@ -28,7 +28,8 @@ def nmzd_reinhard_rescale(input_image_file, nmzd_path, barcode):
     pil_img = pil_img.resize(size=(rescale_size, rescale_size))
     pil_img.save(os.path.join(nmzd_path, barcode+".png"))
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5']
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6', 'sample7', 'sample8', 'sample9', 'sample10']
+
 
 for tissue_name in tissue_list:
     source_path = os.path.join("../preprocessed_data/HE_patches",tissue_name)

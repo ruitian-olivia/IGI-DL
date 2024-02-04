@@ -5,7 +5,7 @@ import glob
 import json
 import pandas as pd
 
-sample_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5']
+sample_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6', 'sample7', 'sample8', 'sample9', 'sample10']
 
 for sample_name in sample_list:
     patch_save_dir = os.path.join("../preprocessed_data/HE_patches", sample_name)
