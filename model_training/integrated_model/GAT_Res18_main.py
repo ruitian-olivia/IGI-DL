@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser(description="Arguments for model training.")
 parser.add_argument(
     "model_name",
     type=str,
-    help="The name of the trainned model",
+    help="The name of the trained model",
 )
 parser.add_argument(
     "learning_rate",
@@ -59,7 +59,7 @@ parser.add_argument(
     "--mlp_hidden",
     nargs='+',
     type=int,
-    help="Dimension of the MLP hidden layer",
+    help="Dimension of MLP hidden layers",
 )
 
 args = parser.parse_args()
@@ -82,8 +82,8 @@ print('Device: {}'.format(device))
 if device=='cpu':
     sys.exit(0)
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
-graph_pt_root_path = '../../preprocessed_data/graph_SVGs'
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6', 'sample7', 'sample8', 'sample9', 'sample10']
+graph_pt_root_path = '../../preprocessed_data/filtered_graph_SVGs'
 graph_dict = {}
 
 for tissue_name in tissue_list:

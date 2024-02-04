@@ -240,12 +240,14 @@ Code in **./model_training**
 cd model_training/image_based
 python resnet18_MLP_Y_main.py img_resnet18 2e-4 1e-4 300 30 --mlp_hidden 512 256 256
 ```
+The first argument ('img_resnet18') represents the name of the trained model, the second argument (2e-4) represents the learning rate, the third argument (1e-4) represents the weight decay, the fourth argument (300) represents the number of epochs, the fifth argument (30) represents the number of patience, and the last argument (--mlp_hidden 512 256 256) represents the dimension of MLP hidden layers.
 
 - ViT
 ```bash
 cd model_training/image_based
 python ViT_MLP_Y_main.py img_ViT 2e-4 1e-4 300 30 8 64 256 --mlp_hidden 512 256 256
 ```
+The first argument ('img_ViT') represents the name of the trained model, the second argument (2e-4) represents the learning rate, the third argument (1e-4) represents the weight decay, the fourth argument (300) represents the number of epochs, the fifth argument (30) represents the number of patience, the sixth argument (8) represents the attention heads number, the seventh argument (64) represents the dimension of head, the eighth argument (256) represents the dimension of hidden features, and the last argument (--mlp_hidden 512 256 256) represents the dimension of MLP hidden layers.
 
 ##### Graph-based models
 
@@ -254,44 +256,51 @@ python ViT_MLP_Y_main.py img_ViT 2e-4 1e-4 300 30 8 64 256 --mlp_hidden 512 256 
 cd model_training/graph_based
 python gin4layer_multi_Y_main.py graph_GIN 2e-4 1e-4 256 300 30
 ```
+The first argument ('graph_GIN') represents the name of the trained model, the second argument (2e-4) represents the learning rate, the third argument (1e-4) represents the weight decay, the fourth argument (300) represents the number of epochs, and the fifth argument (30) represents the number of patience.
 
 - GCN
 ```bash
 cd model_training/graph_based
 python gcn4layer_multi_Y_main.py graph_GCN 2e-4 1e-4 256 300 30
 ```
+The first argument ('graph_GCN') represents the name of the trained model, the second argument (2e-4) represents the learning rate, the third argument (1e-4) represents the weight decay, the fourth argument (300) represents the number of epochs, and the fifth argument (30) represents the number of patience.
 
 - GAT
 ```bash
 cd model_training/graph_based
 python gat4layer_multi_Y_main.py graph_GAT 2e-4 1e-4 256 300 30
 ```
+The first argument ('graph_GAT') represents the name of the trained model, the second argument (2e-4) represents the learning rate, the third argument (1e-4) represents the weight decay, the fourth argument (300) represents the number of epochs, and the fifth argument (30) represents the number of patience.
 
 ##### Integrated models
-
 - GIN+ResNet18
 ```bash
 cd model_training/integrated_model
 python GIN_Res18_main.py integrated_GIN_resnet 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
 ```
+The first argument ('integrated_GIN_resnet') represents the name of the trained model, the second argument (2e-4) represents the learning rate, the third argument (1e-4) represents the weight decay, the fourth argument (256) represents the dimension of the GIN hidden layer, the fifth argument (300) represents the number of epochs, the sixth argument (30) represents the number of patience, and the last argument (--mlp_hidden 512 256 256) represents the dimension of MLP hidden layers.
 
 - GCN+ResNet18
 ```bash
 cd model_training/integrated_model
 python GCN_Res18_main.py integrated_GCN_resnet 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
 ```
+The first argument ('integrated_GCN_resnet') represents the name of the trained model, the second argument (2e-4) represents the learning rate, the third argument (1e-4) represents the weight decay, the fourth argument (256) represents the dimension of the GCN hidden layer, the fifth argument (300) represents the number of epochs, the sixth argument (30) represents the number of patience, and the last argument (--mlp_hidden 512 256 256) represents the dimension of MLP hidden layers.
 
 - GAT+ResNet18
 ```bash
 cd model_training/integrated_model
-python GAT_Res18_main.py integrated_GCN_resnet 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
+python GAT_Res18_main.py integrated_GAT_resnet 2e-4 1e-4 256 300 30 --mlp_hidden 512 256 256
 ```
+The first argument ('integrated_GAT_resnet') represents the name of the trained model, the second argument (2e-4) represents the learning rate, the third argument (1e-4) represents the weight decay, the fourth argument (256) represents the dimension of the GAT hidden layer, the fifth argument (300) represents the number of epochs, the sixth argument (30) represents the number of patience, and the last argument (--mlp_hidden 512 256 256) represents the dimension of MLP hidden layers.
 
 - GIN+ViT
 ```bash
 cd model_training/integrated_model
 python GIN_ViT_MLP_main.py integrated_GIN_ViT 2e-4 1e-4 256 300 30 8 64 256 256 --mlp_hidden 512 256 256
 ```
+The first argument ('integrated_GIN_ViT') represents the name of the trained model, the second argument (2e-4) represents the learning rate, the third argument (1e-4) represents the weight decay, the fourth argument (256) represents the dimension of the GIN hidden layer, the fifth argument (300) represents the number of epochs, the sixth argument (30) represents the number of patience, the seventh argument (8) represents the attention heads number in ViT, the eighth argument (64) represents the dimension of head in ViT, the ninth argument (256) represents the dimension of hidden features in ViT, the tenth argument (256) represents the dimension of out features in ViT, and the last argument (--mlp_hidden 512 256 256) represents the dimension of MLP hidden layers.
+
 ### IGI-DL prediction
 Code in **./model_prediction**
 

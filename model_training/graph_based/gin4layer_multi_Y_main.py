@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser(description="Arguments for model training.")
 parser.add_argument(
     "model_name",
     type=str,
-    help="The name of the trainned model",
+    help="The name of the trained model",
 )
 parser.add_argument(
     "learning_rate",
@@ -72,8 +72,8 @@ print('Device: {}'.format(device))
 if not torch.cuda.is_available():
     sys.exit ()
 
-tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6']
-graph_pt_root_path = '../../preprocessed_data/graph_SVGs'
+tissue_list = ['sample1', 'sample2', 'sample3', 'sample4', 'sample5', 'sample6', 'sample7', 'sample8', 'sample9', 'sample10']
+graph_pt_root_path = '../../preprocessed_data/filtered_graph_SVGs'
 graph_dict = {}
 
 for tissue_name in tissue_list:
