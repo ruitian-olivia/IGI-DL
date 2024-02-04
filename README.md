@@ -23,7 +23,7 @@ Major dependencies are:
 The model weights trained on three cancer types, cutaneous squamous cell carcinoma (cSCC), breast cancer,  and colorectal cancer (CRC), are saved in **./model_weights**.
 
 ### Demo data
-Demo data can be downloaded on the [Zenodo](https://zenodo.org/record/7937635#.ZGMOF-xBy3J), including a cSCC sample sequenced by 10X Visium and a breast cancer sample sequenced by ST. Downloaded demo data can be saved in **./download_data**.
+Demo data can be downloaded on the [Zenodo](https://zenodo.org/records/10613039), including a cSCC sample sequenced by 10X Visium and a breast cancer sample sequenced by ST. Downloaded demo data can be saved in **./download_data**.
 
 ### Demo example
 The usage example of this Python package is shown in the **ST_IGI_demo.ipynb**. When calling some functions of ST_IGI, it will automatically download the model weights and demo data. If it fails to download due to network reasons, you can download the relevant files yourself by referring to the contents of the two sections above, **Model weights** and **Demo data**.
