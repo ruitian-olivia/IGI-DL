@@ -176,7 +176,7 @@ Standardized nuclei features for each patch are saves in **./preprocessed_data/f
 
 ###### 1.7 Nuclei features selection
 
-Nuclei features selection was conducted employing a correlation filter based on the absolute values of pairwise Spearman's correlation coefficient ($\rho$) to mitigate feature redundancy and prevent model overfitting (aimed at reducing feature dimensionality and addressing the overfitting issue). The threshold for $\rho$ was set at 0.9. If two features exhibited a $\rho$ > 0.9, the approach assessed the mean absolute correlation of each variable, and the variable with the highest mean absolute correlation was excluded.
+Nuclei features selection was conducted employing a correlation filter based on the absolute values of pairwise Spearman's correlation coefficient ($\rho$) to mitigate feature redundancy. The threshold for $\rho$ was set at 0.9. If two features exhibited a $\rho$ > 0.9, the approach assessed the mean absolute correlation of each variable, and the variable with the highest mean absolute correlation was excluded.
 
 ```bash
 cd preprocessing/nuclei_features_selection
