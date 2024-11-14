@@ -130,7 +130,7 @@ Normalized HE patches are saved in **./preprocessed_data/HE_nmzd**.
 
 ###### 1.3 Nuclei segmentation
 
-Using Hover-Nety<sup>[1]</sup> pretrained on PanNuke Datasety<sup>[2]</sup> to segment nucleus in the HE patches, where the model weight file is saved in **./Hover-Net/hovernet-inference-weights** as pannuke.npz.
+Using Hover-Net<sup>[1]</sup> pretrained on PanNuke Dataset<sup>[2]</sup> to segment nucleus in the HE patches, where the model weight file is saved in **./Hover-Net/hovernet-inference-weights** as pannuke.npz.
 
 ```bash
 cd preprocessing
