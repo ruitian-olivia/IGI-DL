@@ -1,0 +1,4 @@
+HE_entity_submitter_id,case_id,HE_entity_id,HE_file_name,case_submitter_id,project_id,age_at_index,race,gender,vital_status,days_to_death,days_to_last_follow_up,ajcc_pathologic_stage
+TCGA-CM-5861-01Z-00-DX1,9743d31a-ea8f-4847-87d2-ebf77cc5983d,1ee74833-9be1-492d-9ba1-e84c819c0c07,TCGA-CM-5861-01Z-00-DX1.b900abc0-ecca-48e1-98ba-fbc99a6dae3e.svs,TCGA-CM-5861,TCGA-COAD,63,white,female,Alive,'--,457,Stage IIA
+TCGA-A6-6651-01Z-00-DX1,0ec6ed47-db99-4273-9823-ffbde6a77091,50e22024-062b-4d62-ad66-48638ba4f54a,TCGA-A6-6651-01Z-00-DX1.09ad2d69-d71d-4fa2-9504-80557a053db4.svs,TCGA-A6-6651,TCGA-COAD,55,white,female,Alive,'--,662,Stage IIIB
+TCGA-AA-3675-01Z-00-DX1,41658cf8-0de1-4a97-bb60-0f0107c84e00,91b82423-1121-436d-8ffe-478b85dac460,TCGA-AA-3675-01Z-00-DX1.9afbbb26-2574-46af-8154-5f39bab6f01a.svs,TCGA-AA-3675,TCGA-COAD,84,not reported,male,Alive,'--,1431,Stage II

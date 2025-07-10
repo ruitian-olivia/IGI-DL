@@ -1,0 +1,4 @@
+HE_entity_submitter_id,case_id,HE_entity_id,HE_file_name,case_submitter_id,project_id,age_at_index,race,gender,vital_status,days_to_death,days_to_last_follow_up,ajcc_pathologic_stage
+TCGA-AR-A1AN-01Z-00-DX1,43029932-feb0-4658-97fa-645c1e775009,38849d6e-fddf-43ed-8943-eca9790a45a4,TCGA-AR-A1AN-01Z-00-DX1.1118F9FE-6DF2-4496-B102-D3A10D332EC0.svs,TCGA-AR-A1AN,TCGA-BRCA,46,white,female,Alive,'--,2920,Stage IIA
+TCGA-E2-A1L8-01Z-00-DX1,eebad74f-5961-4e91-b0eb-157a2f6f952b,79e61098-3f0c-47db-986a-0502825aa10a,TCGA-E2-A1L8-01Z-00-DX1.842BF73D-2D64-4ABA-880D-DBE8F4C2AA19.svs,TCGA-E2-A1L8,TCGA-BRCA,52,black or african american,female,Alive,'--,2240,Stage IIB
+TCGA-A2-A0T1-01Z-00-DX1,02bed00f-bef7-4fb7-b243-540354990e45,63b3d752-4b90-451f-9965-c89b91aebbc2,TCGA-A2-A0T1-01Z-00-DX1.CD1E9C46-18A3-466B-AA0B-24F3055FA851.svs,TCGA-A2-A0T1,TCGA-BRCA,55,american indian or alaska native,female,Alive,'--,521,Stage IIIC

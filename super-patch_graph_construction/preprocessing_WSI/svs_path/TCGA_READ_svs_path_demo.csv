@@ -1,0 +1,4 @@
+,patient_id,image_path
+0,TCGA-EI-7002-01Z-00-DX1,root_path/TCGA-dataset/TCGA-READ/slides/e09f4cd8-a80f-472c-a54a-8968ff0f04d1/TCGA-EI-7002-01Z-00-DX1.3f2935be-16fc-4a41-990a-8ab7f8fe6c85.svs
+1,TCGA-AF-2689-01Z-00-DX1,root_path/TCGA-dataset/TCGA-READ/slides/2fac124a-8ad4-48b2-81b8-ad7c2f80d122/TCGA-AF-2689-01Z-00-DX1.38242a22-4fcd-471f-a81c-56a5fe6f9a3a.svs
+2,TCGA-AG-3878-01Z-00-DX1,root_path/TCGA-dataset/TCGA-READ/slides/da3c3cba-40bb-440a-b7ae-ee19c73cedda/TCGA-AG-3878-01Z-00-DX1.e4b3b620-2fde-4b31-b1d9-0f680a19bca5.svs
